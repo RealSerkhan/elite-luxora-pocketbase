@@ -367,5 +367,5 @@ app.get('/api/favorites', authenticateUser, async (req, res) => {
 
 
 app.listen(3000, () => {
-    console.log('API server running on http://127.0.0.1:3000');
+    console.log('API server running on http://0.0.0.1:3000');
 });
