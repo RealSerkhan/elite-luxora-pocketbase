@@ -7,6 +7,11 @@ export const getProperties = async (req, res) => {
         if (req.query.country) filter_query += `${filter_query ? ' && ' : ''}address.country = "${req.query.country}"`;
         if (req.query.category) filter_query += `${filter_query ? ' && ' : ''}category.name = "${req.query.category}"`;
 
+        // **Project ID Filter**
+        if (req.query.project_id) {
+            filter_query += `${filter_query ? ' && ' : ''}project_id = "${req.query.project_id}"`;
+        }
+
         // **Property Type (Multi-Select)**
         if (req.query.property_type) {
             const propertyTypes = req.query.property_type.split(',');
@@ -84,7 +89,17 @@ export const getProperties = async (req, res) => {
         // **Fetch filtered properties from PocketBase**
         const result = await pb.collection('properties').getList(page, per_page, {
             sort: '-created',
-            filter: filter_query || undefined
+            filter: filter_query || undefined,
+            expand: 'project_id,developer_id,owner_id'
+        });
+        const transformed_items = result.items.map(property => {
+            const { developer_id,owner_id,project_id,expand, ...rest } = property;
+            return {
+                ...rest,
+                project: property.expand?.project_id || null,
+                owner: property.expand?.owner_id || null,
+                developer: property.expand?.developer_id || null
+            };
         });
 
         res.json({
@@ -92,7 +107,7 @@ export const getProperties = async (req, res) => {
             total_pages: result.totalPages,
             current_page: page,
             per_page: per_page,
-            properties: result.items
+            properties: transformed_items
         });
     } catch (error) {
         res.status(400).json({ success: false, error: error.message });

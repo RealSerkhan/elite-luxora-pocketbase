@@ -12,6 +12,18 @@ export const submitContactForm = async (req, res) => {
             return res.status(400).json({ success: false, message: "All fields are required." });
         }
 
+        // ✅ Email Validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ success: false, message: "Invalid email format." });
+        }
+        
+        // ✅ Phone Number Validation (Allows +, digits, and optional spaces)
+        const phoneRegex = /^\+?[0-9\s\-()]+$/;
+        if (!phoneRegex.test(phone_number)) {
+            return res.status(400).json({ success: false, message: "Invalid phone number format." });
+        }        
+
         // ✅ Store the contact message in PocketBase
         await pb.collection('contacts').create({
             name,

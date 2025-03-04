@@ -18,7 +18,7 @@ app.use(express.json());
 
 // ✅ Enable CORS for Frontend Access
 app.use(cors({
-    origin: '*', // ✅ Allows all origins (for testing)
+    origin: '*', // ✅ Allows all origins (for testing)// ['https://yourfrontend.com', 'https://another-frontend.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
