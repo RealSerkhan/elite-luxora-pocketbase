@@ -6,6 +6,7 @@ import userRoutes from './routes/user_routes.js';
 import projectRoutes from './routes/project_routes.js';
 import contactRoutes from './routes/contact_routes.js';
 import aboutUsRoutes from './routes/about_us_routes.js';
+import cors from 'cors';
 
 
 
@@ -14,6 +15,13 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+
+// ✅ Enable CORS for Frontend Access
+app.use(cors({
+    origin: '*', // ✅ Allows all origins (for testing)
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 
 
