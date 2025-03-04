@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth_routes.js';
 import propertyRoutes from './routes/property_routes.js';
 import userRoutes from './routes/user_routes.js';
+import projectRoutes from './routes/project_routes.js';
+import contactRoutes from './routes/contact_routes.js';
+import aboutUsRoutes from './routes/about_us_routes.js';
 
 
 
@@ -20,6 +23,11 @@ app.use(express.json());
 app.use('/api/property',propertyRoutes)
 
 
+/**
+ * 📌 Project Routes
+ */
+app.use('/api/project', projectRoutes);
+
 
 
 // ✅ Auth Routes
@@ -28,6 +36,15 @@ app.use('/api/auth', authRoutes);
 
 // ✅ User Routes
 app.use('/api/user', userRoutes);
+
+
+// ✅ Contact Routes
+app.use('/api', contactRoutes);
+
+
+// ✅ About Us Routes
+app.use('/api', aboutUsRoutes);
+
 
 
 
