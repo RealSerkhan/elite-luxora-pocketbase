@@ -1,6 +1,6 @@
 import BaseModel from './base_model.js';
 
-class PropertyType extends BaseModel {
+class City extends BaseModel {
     constructor(data, lang = "en") {
         super(data);
         
@@ -12,4 +12,4 @@ class PropertyType extends BaseModel {
     }
 }
 
-export default PropertyType;
+export default City;

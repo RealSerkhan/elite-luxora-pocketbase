@@ -15,4 +15,17 @@ const authenticateUser = async (req, res, next) => {
         res.status(401).json({ success: false, message: "Invalid or expired token" });
     }
 };
+
+export const isUserRegistered = async (email) => {
+    try {
+        // 🔹 Query users collection with email filter
+        await pb.collection('users').getFirstListItem(`email="${email}"`);
+
+        // ✅ Return true if user exists
+        return true;
+    } catch (error) {
+        console.log("Error checking user registration:", error);
+        return false;
+    }
+};
 export default authenticateUser;

@@ -1,90 +1,14 @@
 import pb from '../config/database.js';
 import Property from '../models/property.js';
+import {buildBooleanMatch,buildExactMatch,buildKeywordSearch,buildMultiSelectFilter,buildMultiSelectJSONFilter,buildMultiSelectNumberFilter,buildNumericRange} from '../utils/filter.js';
 
 
 export const getProperties = async (req, res) => {
     try {
-        const lang = req.headers['accept-language'] || "en"; // ✅ Get language from headers
-        let filter_query = "";
-
-        // ✅ Filter by City & Country
-        if (req.query.city) filter_query += `${filter_query ? ' && ' : ''}address.city = "${req.query.city}"`;
-        if (req.query.country) filter_query += `${filter_query ? ' && ' : ''}address.country = "${req.query.country}"`;
-
-        // ✅ Filter by Project & Agent ID
-        if (req.query.project_id) filter_query += `${filter_query ? ' && ' : ''}project_id = "${req.query.project_id}"`;
-        if (req.query.agent_id) filter_query += `${filter_query ? ' && ' : ''}agent_id = "${req.query.agent_id}"`;
-
-        // ✅ Filter by Property Type (Multi-Select)
-        if (req.query.property_type) {
-            const propertyTypes = req.query.property_type.split(',');
-            const typeConditions = propertyTypes.map(type => `property_type_id = "${type}"`).join(' || ');
-            filter_query += filter_query ? ` && (${typeConditions})` : `(${typeConditions})`;
-        }
-
-        // ✅ Filter by Category (Multi-Select)
-        if (req.query.category_ids) {
-            const categoryIds = req.query.category_ids.split(',');
-            const categoryConditions = categoryIds.map(cat => `category_ids ?~ "${cat}"`).join(' && ');
-            filter_query += filter_query ? ` && (${categoryConditions})` : `(${categoryConditions})`;
-        }
-
-        // ✅ Filter by Bedrooms & Bathrooms (Multi-Select)
-        if (req.query.bedrooms) {
-            const bedrooms = req.query.bedrooms.split(',');
-            const bedroomConditions = bedrooms.map(bed => `living_space.bedrooms = ${bed}`).join(' || ');
-            filter_query += filter_query ? ` && (${bedroomConditions})` : `(${bedroomConditions})`;
-        }
-
-        if (req.query.bathrooms) {
-            const bathrooms = req.query.bathrooms.split(',');
-            const bathroomConditions = bathrooms.map(bath => `living_space.bathrooms = ${bath}`).join(' || ');
-            filter_query += filter_query ? ` && (${bathroomConditions})` : `(${bathroomConditions})`;
-        }
-
-        // ✅ Filter by Price Range
-        if (req.query.min_price) filter_query += (filter_query ? ' && ' : '') + `price >= ${req.query.min_price}`;
-        if (req.query.max_price) filter_query += (filter_query ? ' && ' : '') + `price <= ${req.query.max_price}`;
-
-        // ✅ Filter by Furnishing Status
-        if (req.query.is_furnished !== undefined) {
-            filter_query += `${filter_query ? ' && ' : ''}is_furnished = ${req.query.is_furnished}`;
-        }
-
-        // ✅ Filter by Completion Status
-        if (req.query.is_verified !== undefined) {
-            filter_query += `${filter_query ? ' && ' : ''}is_verified = ${req.query.is_verified}`;
-        }
-
-        // ✅ Filter by Property Size
-        if (req.query.min_area) filter_query += (filter_query ? ' && ' : '') + `living_space.area >= ${req.query.min_area}`;
-        if (req.query.max_area) filter_query += (filter_query ? ' && ' : '') + `living_space.area <= ${req.query.max_area}`;
-
-        // ✅ Filter by Amenities (Multi-Select)
-        if (req.query.amenities) {
-            const amenities = req.query.amenities.split(',');
-            const amenityConditions = amenities.map(amenity => `amenities ?~ "${amenity}"`).join(' && ');
-            filter_query += filter_query ? ` && (${amenityConditions})` : `(${amenityConditions})`;
-        }
-
-        // ✅ Filter by Deal Types (Multi-Select)
-        if (req.query.deal_types) {
-            const dealTypes = req.query.deal_types.split(',');
-            const dealConditions = dealTypes.map(deal => `deal_types ?~ "${deal}"`).join(' && ');
-            filter_query += filter_query ? ` && (${dealConditions})` : `(${dealConditions})`;
-        }
-
-        // ✅ Filter by Keywords
-        if (req.query.keywords) {
-            filter_query += (filter_query ? ' && ' : '') + `description_${lang} ~ "${req.query.keywords}"`;
-        }
-
-        // ✅ Filter by Virtual Viewings
-        if (req.query.virtual_viewings) {
-            const virtualViewings = req.query.virtual_viewings.split(',');
-            const viewConditions = virtualViewings.map(view => `virtual_viewings ?~ "${view}"`).join(' && ');
-            filter_query += filter_query ? ` && (${viewConditions})` : `(${viewConditions})`;
-        }
+        const lang = req.headers['accept-language'] || "en";
+        
+        // ✅ Build the filter in a separate function
+        const filter_query = buildFilterQuery(req, lang);
 
         // ✅ Pagination
         const page = parseInt(req.query.page) || 1;
@@ -96,7 +20,7 @@ export const getProperties = async (req, res) => {
         const result = await pb.collection('properties').getList(page, per_page, {
             sort: '-created',
             filter: filter_query || undefined,
-            expand: 'project_id,developer_id,owner_id,agent_id,category_ids,currency_id,property_type_id'
+            expand: 'project_id,developer_id,owner_id,agent_id,category_ids,currency_id,area_id,city_id,country_id'
         });
 
         // ✅ Transform raw PocketBase data into `Property` objects
@@ -113,6 +37,55 @@ export const getProperties = async (req, res) => {
         res.status(400).json({ success: false, message: error.message });
     }
 };
+
+function buildFilterQuery(req, lang) {
+    let filter = "";
+  
+    // 1. Single-value exact matches
+    filter = addCondition(filter, buildExactMatch(req.query.city, 'city_id'));
+    filter = addCondition(filter, buildExactMatch(req.query.country, 'country_id'));
+    filter = addCondition(filter, buildExactMatch(req.query.project_id, 'project_id'));
+    filter = addCondition(filter, buildExactMatch(req.query.agent_id, 'agent_id'));
+  
+    // 2. Multi-select: property_type, category_ids
+    filter = addCondition(filter, buildMultiSelectFilter(req.query.property_types, 'property_type'));
+    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.category_ids, 'category_ids'));
+  
+    // 3. Bedrooms & Bathrooms multi-select
+    filter = addCondition(filter, buildMultiSelectNumberFilter(req.query.bedrooms,'living_space.bedrooms'));
+    filter = addCondition(filter, buildMultiSelectNumberFilter(req.query.bathrooms,'living_space.bathrooms'));
+  
+    // 4. Price range
+    const priceCondition = buildNumericRange(req.query.min_price, req.query.max_price, 'price');
+    filter = addCondition(filter, priceCondition);
+  
+    // 5. Furnishing & Verified (booleans)
+    filter = addCondition(filter, buildBooleanMatch(req.query.is_furnished, 'is_furnished'));
+    filter = addCondition(filter, buildBooleanMatch(req.query.is_verified, 'is_verified'));
+  
+    // 6. Living space area
+    const areaCondition = buildNumericRange(req.query.min_area, req.query.max_area, 'living_space.area');
+    filter = addCondition(filter, areaCondition);
+  
+    // 7. Amenities & Deal Types (multi-select JSON)
+    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.amenities, 'amenities'));
+    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.deal_types, 'deal_types'));
+  
+    // 8. Keyword search
+    filter = addCondition(filter, buildKeywordSearch(req.query.keywords, lang));
+  
+    // 9. Virtual Viewings (multi-select JSON)
+    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.virtual_viewings, 'virtual_viewings'));
+  
+    return filter;
+  }
+
+  function addCondition(query, condition) {
+    if (!condition) return query;  // Nothing to add
+    return query ? `${query} && ${condition}` : condition;
+  }
+
+  
 
 /**
  * 📌 Get a single property by ID

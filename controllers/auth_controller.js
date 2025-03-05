@@ -1,6 +1,8 @@
 import pb from '../config/database.js';
 import transporter from '../config/mailer.js';
 import { isValidEmail } from '../utils/validation.js';
+import { isUserRegistered } from '../middlewares/auth_middleware.js';
+
 
 
 
@@ -36,12 +38,10 @@ export const sendOtp = async (req, res) => {
         if(!isValidEmail(email)){
             return res.status(400).json({ success: false, message: "Email is not valid" });
         }
-        try {
-            await pb.collection('users').getFirstListItem(`email="${email}"`);
-            return res.status(400).json({ success: false, message: "Email is already in use" });
+        let isRegistered=await isUserRegistered(email);
+        if(isRegistered){
+            return res.status(400).json({ success: false, message: "Email is in Use" });
 
-        } catch (error) {
-            console.log("User user not found, proceeding with checking temp user.");
         }
 
         try {
@@ -84,8 +84,6 @@ export const sendOtp = async (req, res) => {
 
         res.json({ success: true, message: "OTP sent to email" });
     } catch (error) {
-        console.log(error);
-
         res.status(400).json({ success: false, message: error.message });
     }
 };
@@ -123,7 +121,8 @@ export const verifyOtp= async (req, res) => {
         const newUser = await pb.collection('users').create({
             email,
             password,
-            passwordConfirm
+            passwordConfirm,
+            "emailVisibility":true
         });
 
         console.log("User registered successfully:", newUser);

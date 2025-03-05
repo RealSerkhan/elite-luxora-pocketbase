@@ -1,11 +1,13 @@
 import Agent from './agent.js';
+import Area from './area.js';
 import BaseModel from './base_model.js';
 import Category from './category.js';
+import City from './city.js';
+import Country from './country.js';
 import Currency from './currency.js';
 import Developer from './developer.js';
 import Owner from './owner.js';
 import Project from './project.js';
-import PropertyType from './property_type.js';
 
 class Property extends BaseModel {
     constructor(data, lang = "en") {
@@ -22,6 +24,8 @@ class Property extends BaseModel {
         this.is_verified = !!data.is_verified;
         this.posted_date = data.posted_date?new Date(data.posted_date) : null;
         this.delivery_date =data.delivery_date? new Date(data.delivery_date) : null;
+        this.property_type = data.property_type;
+
         
         // ✅ Currency (Relation)
         this.currency = data.expand?.currency_id? new Currency(data.expand?.currency_id,lang) : { id: data.currency_id };
@@ -34,12 +38,11 @@ class Property extends BaseModel {
         } : null;
 
         // ✅ Address
-        this.address = data.address ? {
+        this.geography = data.address ? {
             address_name: data.address.address_name || "",
             lat: data.address.lat || 0,
             lon: data.address.lon || 0,
-            city: data.address.city || "",
-            country: data.address.country || ""
+
         } : null;
 
         // ✅ Images & Videos
@@ -52,11 +55,17 @@ class Property extends BaseModel {
 
         // ✅ Relations (Expanded Data or Raw IDs)
         this.categories = data.expand?.category_ids?.map(category=>new Category(category,lang))  || data.category_ids || [];
-        this.property_type = data.expand?.property_type_id?new PropertyType(data.expand?.property_type_id,lang) : { id: data.property_type_id };
         this.owner = data.expand?.owner_id? new Owner(data.expand?.owner_id,lang) : { id: data.owner_id };
         this.project = data.expand?.project_id? new Project(data.expand?.project_id,lang) : { id: data.project_id };
         this.developer = data.expand?.developer_id? new Developer(data.expand?.developer_id,lang) : { id: data.developer_id };
         this.agent = data.expand?.agent_id? new Agent(data.expand?.agent_id,lang) : { id: data.agent_id };
+        this.location = {
+          "area":    data.expand?.area_id? new Area(data.expand?.area_id,lang) : { id: data.area_id },
+          "city" :   data.expand?.city_id? new City(data.expand?.city_id,lang) : { id: data.city_id },
+          "country": data.expand?.country_id? new Country(data.expand?.country_id,lang) : { id: data.country_id }
+        };
+
+        
 
 
         // ✅ Payment Plan
