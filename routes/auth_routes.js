@@ -1,5 +1,5 @@
 import express from 'express';
-import { sendOtp,login,verifyOtp } from '../controllers/auth_controller.js';
+import { sendOtp,login,verifyOtp,forgotPassword,confirmPasswordReset } from '../controllers/auth_controller.js';
 import verifyFirebaseToken from '../middlewares/firebase_auth.js';
 
 
@@ -13,6 +13,13 @@ router.post('/login', login);
 
 // ✅ Route to send OTP
 router.post('/verify-otp', verifyOtp);
+
+// ✅ Route to Forgot Password
+router.post('/forgot-password', forgotPassword);
+
+// ✅ Route to Reset Password
+router.post('/reset-password', confirmPasswordReset);
+
 
 
 // ✅ Login via Firebase & Sync with PocketBase

@@ -1,5 +1,6 @@
 import pb from '../config/database.js';
 import transporter from '../config/mailer.js';
+import { isValidEmail } from '../utils/validation.js';
 
 
 
@@ -29,7 +30,19 @@ export const login= async (req, res) => {
 export const sendOtp = async (req, res) => {
     try {
         const { email } = req.body;
+   
         let tempUser = null;
+
+        if(!isValidEmail(email)){
+            return res.status(400).json({ success: false, message: "Email is not valid" });
+        }
+        try {
+            await pb.collection('users').getFirstListItem(`email="${email}"`);
+            return res.status(400).json({ success: false, message: "Email is already in use" });
+
+        } catch (error) {
+            console.log("User user not found, proceeding with checking temp user.");
+        }
 
         try {
             // ✅ Check if OTP was recently sent
@@ -122,5 +135,46 @@ export const verifyOtp= async (req, res) => {
     } catch (error) {
         console.error("Error in /api/verify-otp:", error);
         res.status(400).json({ success: false, message: "Error verifying OTP" });
+    }
+};
+
+
+/**
+ * 📌 Request Password Reset (Generate & Send OTP)
+ */
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // 🔹 Send reset email via PocketBase
+        await pb.collection('users').requestPasswordReset(email);
+
+        res.json({ success: true, message: "Password reset email sent" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: "Failed to send password reset email" });
+    }
+};
+
+/**
+ * 📌 Confirm Password Reset (Set New Password)
+ */
+export const confirmPasswordReset = async (req, res) => {
+    try {
+        const { token, new_password, confirm_password } = req.body;
+
+        if (!token || !new_password || !confirm_password) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+
+        if (new_password !== confirm_password) {
+            return res.status(400).json({ success: false, message: "Passwords do not match" });
+        }
+
+        // 🔹 Confirm password reset using PocketBase
+        await pb.collection('users').confirmPasswordReset(token, new_password, confirm_password);
+
+        res.json({ success: true, message: "Password has been successfully reset" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: "Failed to reset password", error: error.message });
     }
 };

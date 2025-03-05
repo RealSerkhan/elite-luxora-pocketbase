@@ -1,5 +1,6 @@
 import pb from '../config/database.js';
 import transporter from '../config/mailer.js';
+import { isValidEmail, isValidPhone } from '../utils/validation.js';
 
 /**
  * 📌 Handle Contact Form Submission
@@ -13,14 +14,14 @@ export const submitContactForm = async (req, res) => {
         }
 
         // ✅ Email Validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
+
+        if (!isValidEmail(email)) {
             return res.status(400).json({ success: false, message: "Invalid email format." });
         }
-        
+
         // ✅ Phone Number Validation (Allows +, digits, and optional spaces)
-        const phoneRegex = /^\+?[0-9\s\-()]+$/;
-        if (!phoneRegex.test(phone_number)) {
+
+        if (!isValidPhone(phone_number)) {
             return res.status(400).json({ success: false, message: "Invalid phone number format." });
         }        
 

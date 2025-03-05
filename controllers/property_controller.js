@@ -1,116 +1,116 @@
 import pb from '../config/database.js';
+import Property from '../models/property.js';
+
 
 export const getProperties = async (req, res) => {
     try {
+        const lang = req.headers['accept-language'] || "en"; // ✅ Get language from headers
         let filter_query = "";
+
+        // ✅ Filter by City & Country
         if (req.query.city) filter_query += `${filter_query ? ' && ' : ''}address.city = "${req.query.city}"`;
         if (req.query.country) filter_query += `${filter_query ? ' && ' : ''}address.country = "${req.query.country}"`;
-        if (req.query.category) filter_query += `${filter_query ? ' && ' : ''}category.name = "${req.query.category}"`;
 
-        // **Project ID Filter**
-        if (req.query.project_id) {
-            filter_query += `${filter_query ? ' && ' : ''}project_id = "${req.query.project_id}"`;
-        }
+        // ✅ Filter by Project & Agent ID
+        if (req.query.project_id) filter_query += `${filter_query ? ' && ' : ''}project_id = "${req.query.project_id}"`;
+        if (req.query.agent_id) filter_query += `${filter_query ? ' && ' : ''}agent_id = "${req.query.agent_id}"`;
 
-        // **Property Type (Multi-Select)**
+        // ✅ Filter by Property Type (Multi-Select)
         if (req.query.property_type) {
             const propertyTypes = req.query.property_type.split(',');
-            const typeConditions = propertyTypes.map(type => 'property_type.id = "' + type + '"').join(' || ');
-            filter_query += filter_query ? ' && (' + typeConditions + ')' : '(' + typeConditions + ')';
+            const typeConditions = propertyTypes.map(type => `property_type_id = "${type}"`).join(' || ');
+            filter_query += filter_query ? ` && (${typeConditions})` : `(${typeConditions})`;
         }
 
-        // **Bedrooms (Multi-Select)**
+        // ✅ Filter by Category (Multi-Select)
+        if (req.query.category_ids) {
+            const categoryIds = req.query.category_ids.split(',');
+            const categoryConditions = categoryIds.map(cat => `category_ids ?~ "${cat}"`).join(' && ');
+            filter_query += filter_query ? ` && (${categoryConditions})` : `(${categoryConditions})`;
+        }
+
+        // ✅ Filter by Bedrooms & Bathrooms (Multi-Select)
         if (req.query.bedrooms) {
             const bedrooms = req.query.bedrooms.split(',');
-            const bedroomConditions = bedrooms.map(bed => 'living_space.bedrooms = ' + bed).join(' || ');
-            filter_query += filter_query ? ' && (' + bedroomConditions + ')' : '(' + bedroomConditions + ')';
+            const bedroomConditions = bedrooms.map(bed => `living_space.bedrooms = ${bed}`).join(' || ');
+            filter_query += filter_query ? ` && (${bedroomConditions})` : `(${bedroomConditions})`;
         }
 
-        // **Bathrooms (Multi-Select)**
         if (req.query.bathrooms) {
             const bathrooms = req.query.bathrooms.split(',');
-            const bathroomConditions = bathrooms.map(bath => 'living_space.bathrooms = ' + bath).join(' || ');
-            filter_query += filter_query ? ' && (' + bathroomConditions + ')' : '(' + bathroomConditions + ')';
+            const bathroomConditions = bathrooms.map(bath => `living_space.bathrooms = ${bath}`).join(' || ');
+            filter_query += filter_query ? ` && (${bathroomConditions})` : `(${bathroomConditions})`;
         }
 
-        // **Price Range**
-        if (req.query.min_price) {
-            filter_query += (filter_query ? ' && ' : '') + 'price >= ' + req.query.min_price;
-        }
-        if (req.query.max_price) {
-            filter_query += (filter_query ? ' && ' : '') + 'price <= ' + req.query.max_price;
+        // ✅ Filter by Price Range
+        if (req.query.min_price) filter_query += (filter_query ? ' && ' : '') + `price >= ${req.query.min_price}`;
+        if (req.query.max_price) filter_query += (filter_query ? ' && ' : '') + `price <= ${req.query.max_price}`;
+
+        // ✅ Filter by Furnishing Status
+        if (req.query.is_furnished !== undefined) {
+            filter_query += `${filter_query ? ' && ' : ''}is_furnished = ${req.query.is_furnished}`;
         }
 
-        // **Furnishing (Multi-Select)**
-        if (req.query.furnishing) {
-            const furnishings = req.query.furnishing.split(',');
-            const furnishingConditions = furnishings.map(furnish => 'furnishing = "' + furnish + '"').join(' || ');
-            filter_query += filter_query ? ' && (' + furnishingConditions + ')' : '(' + furnishingConditions + ')';
+        // ✅ Filter by Completion Status
+        if (req.query.is_verified !== undefined) {
+            filter_query += `${filter_query ? ' && ' : ''}is_verified = ${req.query.is_verified}`;
         }
 
-        // **Completion Status (Single-Select)**
-        if (req.query.completion_status) {
-            filter_query += (filter_query ? ' && ' : '') + 'completion_status = "' + req.query.completion_status + '"';
-        }
+        // ✅ Filter by Property Size
+        if (req.query.min_area) filter_query += (filter_query ? ' && ' : '') + `living_space.area >= ${req.query.min_area}`;
+        if (req.query.max_area) filter_query += (filter_query ? ' && ' : '') + `living_space.area <= ${req.query.max_area}`;
 
-        // **Property Size (sqft)**
-        if (req.query.min_area) {
-            filter_query += (filter_query ? ' && ' : '') + 'living_space.area >= ' + req.query.min_area;
-        }
-        if (req.query.max_area) {
-            filter_query += (filter_query ? ' && ' : '') + 'living_space.area <= ' + req.query.max_area;
-        }
-
-        // **Amenities (Multi-Select)**
+        // ✅ Filter by Amenities (Multi-Select)
         if (req.query.amenities) {
             const amenities = req.query.amenities.split(',');
-            const amenityConditions = amenities.map(amenity => 'amenities ?~ "' + amenity + '"').join(' && ');
-            filter_query += filter_query ? ' && (' + amenityConditions + ')' : '(' + amenityConditions + ')';
+            const amenityConditions = amenities.map(amenity => `amenities ?~ "${amenity}"`).join(' && ');
+            filter_query += filter_query ? ` && (${amenityConditions})` : `(${amenityConditions})`;
         }
 
-        // **Keywords Search**
+        // ✅ Filter by Deal Types (Multi-Select)
+        if (req.query.deal_types) {
+            const dealTypes = req.query.deal_types.split(',');
+            const dealConditions = dealTypes.map(deal => `deal_types ?~ "${deal}"`).join(' && ');
+            filter_query += filter_query ? ` && (${dealConditions})` : `(${dealConditions})`;
+        }
+
+        // ✅ Filter by Keywords
         if (req.query.keywords) {
-            filter_query += (filter_query ? ' && ' : '') + 'description ~ "' + req.query.keywords + '"';
+            filter_query += (filter_query ? ' && ' : '') + `description_${lang} ~ "${req.query.keywords}"`;
         }
 
-        // **Virtual Viewings (Multi-Select)**
+        // ✅ Filter by Virtual Viewings
         if (req.query.virtual_viewings) {
             const virtualViewings = req.query.virtual_viewings.split(',');
-            const viewConditions = virtualViewings.map(view => 'virtual_viewings ?~ "' + view + '"').join(' && ');
-            filter_query += filter_query ? ' && (' + viewConditions + ')' : '(' + viewConditions + ')';
+            const viewConditions = virtualViewings.map(view => `virtual_viewings ?~ "${view}"`).join(' && ');
+            filter_query += filter_query ? ` && (${viewConditions})` : `(${viewConditions})`;
         }
 
-        // **Pagination**
+        // ✅ Pagination
         const page = parseInt(req.query.page) || 1;
         const per_page = parseInt(req.query.per_page) || 10;
 
         console.log(`Applied Filter: ${filter_query}, Page: ${page}, PerPage: ${per_page}`);
 
-        // **Fetch filtered properties from PocketBase**
+        // ✅ Fetch filtered properties from PocketBase
         const result = await pb.collection('properties').getList(page, per_page, {
             sort: '-created',
             filter: filter_query || undefined,
-            expand: 'project_id,developer_id,owner_id'
+            expand: 'project_id,developer_id,owner_id,agent_id,category_ids,currency_id,property_type_id'
         });
-        const transformed_items = result.items.map(property => {
-            const { developer_id,owner_id,project_id,expand, ...rest } = property;
-            return {
-                ...rest,
-                project: property.expand?.project_id || null,
-                owner: property.expand?.owner_id || null,
-                developer: property.expand?.developer_id || null
-            };
-        });
+
+        // ✅ Transform raw PocketBase data into `Property` objects
+        const properties = result.items.map(item => new Property(item, lang));
 
         res.json({
             total_items: result.totalItems,
             total_pages: result.totalPages,
             current_page: page,
             per_page: per_page,
-            properties: transformed_items
+            properties
         });
     } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
+        res.status(400).json({ success: false, message: error.message });
     }
 };
 

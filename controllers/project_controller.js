@@ -1,10 +1,14 @@
 import pb from '../config/database.js';
+import Project from '../models/project.js';
+import { getLanguage } from '../utils/get_language.js';
 
 /**
  * 📌 Get all projects (with filtering & pagination)
  */
 export const getProjects = async (req, res) => {
     try {
+        const lang = req.headers['accept-language'] || "en"; // ✅ Get language from headers
+
         let filter_query = ""; // Initialize filter query
 
         if (req.query.title) filter_query += `title ~ "${req.query.title}"`;
@@ -25,13 +29,7 @@ export const getProjects = async (req, res) => {
         });
 
         // ✅ Transform Response
-        const transformed_items = result.items.map(project => {
-            const { developer_id, ...rest } = project;
-            return {
-                ...rest,
-                developer: project.expand?.developer_id || null
-            };
-        });
+        const transformed_items = result.items.map(project => new Project(project,lang));
 
         res.json({
             total_items: result.totalItems,
@@ -50,15 +48,17 @@ export const getProjects = async (req, res) => {
  */
 export const getProjectById = async (req, res) => {
     try {
+
+       const lang =getLanguage(req);
+
+        
         const project = await pb.collection('projects').getOne(req.params.id, {
             expand: 'developer_id'
         });
 
         // ✅ Remove `developer_id` and expand data instead
-        const { developer_id, ...rest } = project;
-        res.status(201).json({ success: true, data:{
-            ...rest,
-             developer: project.expand?.developer_id || null} });
+        
+        res.status(201).json({ success: true, data:new Project(project,lang)});
     } catch (error) {
         res.status(404).json({ success: false, error: "Project not found" });
     }

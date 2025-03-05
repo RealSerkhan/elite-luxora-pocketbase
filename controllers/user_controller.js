@@ -1,4 +1,6 @@
 import pb from '../config/database.js';
+import Property from '../models/property.js';
+import { getLanguage } from '../utils/get_language.js';
 
 
 
@@ -72,7 +74,7 @@ export const getFavorites= async (req, res) => {
         });
 
         const properties = favorites
-            .map(fav => fav.expand?.property_id)
+            .map(fav =>fav.expand?.property_id? new Property(fav.expand?.property_id,getLanguage(req)):undefined)
             .filter(property => property !== undefined);
 
         res.json({ success: true, data: properties });

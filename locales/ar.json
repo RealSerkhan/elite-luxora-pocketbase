@@ -1,0 +1,11 @@
+{
+    "property_types": {
+      "apartment": "شقة",
+      "villa": "فيلا",
+      "townhouse": "تاون هاوس"
+    },
+    "errors": {
+      "invalid_email": "تنسيق البريد الإلكتروني غير صالح.",
+      "required_field": "هذا الحقل مطلوب."
+    }
+  }

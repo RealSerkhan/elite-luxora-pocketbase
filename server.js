@@ -7,6 +7,8 @@ import projectRoutes from './routes/project_routes.js';
 import contactRoutes from './routes/contact_routes.js';
 import aboutUsRoutes from './routes/about_us_routes.js';
 import cors from 'cors';
+import i18next from './config/i18n.js';
+import middleware from 'i18next-http-middleware';
 
 
 
@@ -23,6 +25,8 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// ✅ Add i18next Middleware
+app.use(middleware.handle(i18next));
 
 
 /**

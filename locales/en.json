@@ -1,0 +1,12 @@
+{
+    
+    "property_types": {
+      "apartment": "Apartment",
+      "villa": "Villa",
+      "townhouse": "Townhouse"
+    },
+    "errors": {
+      "invalid_email": "Invalid email format.",
+      "required_field": "This field is required."
+    }
+  }
