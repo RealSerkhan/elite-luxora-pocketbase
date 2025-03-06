@@ -34,6 +34,7 @@ const verifyFirebaseToken = async (req, res, next) => {
             pbUser = await pb.collection('users').create({
                 email: decodedToken.email,
                 name: decodedToken.name || "Firebase User",
+                emailVisibilty:true,
                 auth_type: "google", // ✅ Track users who signed up with Google
                 password: Math.random().toString(36).slice(-8), // ✅ Set a random password
                 password_confirm: Math.random().toString(36).slice(-8)
