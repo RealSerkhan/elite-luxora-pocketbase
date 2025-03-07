@@ -65,7 +65,7 @@ export const getClosedDeals = async (req, res) => {
         console.log(`Applied Filter: ${filter_query}, Page: ${page}, PerPage: ${per_page}`);
 
         // ✅ Fetch deals from PocketBase
-        const result = await pb.collection('closed_deals').getList(page, per_page, {
+        const result = await pb.collection('transactions').getList(page, per_page, {
             sort: '-deal_date',
             filter: filter_query || undefined
         });
@@ -87,7 +87,7 @@ export const getClosedDeals = async (req, res) => {
  */
 export const getClosedDealById = async (req, res) => {
     try {
-        const deal = await pb.collection('closed_deals').getOne(req.params.id);
+        const deal = await pb.collection('transactions').getOne(req.params.id);
         res.json({ success: true, data: deal });
     } catch (error) {
         res.status(404).json({ success: false, message: "Closed deal not found." });
