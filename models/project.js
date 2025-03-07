@@ -1,4 +1,8 @@
+import Area from './area.js';
 import BaseModel from './base_model.js';
+import City from './city.js';
+import Country from './country.js';
+import Developer from './developer.js';
 
 class Project extends BaseModel {
     constructor(data, lang = "en") {
@@ -39,7 +43,21 @@ class Project extends BaseModel {
         this.faq = data.faq || {};
 
         // ✅ Developer (Relation)
-        this.developer = data.expand?.developer_id 
+        this.developer = data.expand?.developer_id?new Developer(data.expand?.developer_id,lang):{id:data?.developer_id};
+        this.location = {
+            "area":    data.expand?.area_id? new Area(data.expand?.area_id,lang) : { id: data.area_id },
+            "city" :   data.expand?.city_id? new City(data.expand?.city_id,lang) : { id: data.city_id },
+            "country": data.expand?.country_id? new Country(data.expand?.country_id,lang) : { id: data.country_id }
+          };
+
+        
+        // ✅ Geography
+        this.geography = data.address ? {
+            address_name: data.address.address_name || "",
+            lat: data.address.lat || 0,
+            lon: data.address.lon || 0,
+
+        } : null;
 
         // ✅ Units Available
         this.units = data.units ? {

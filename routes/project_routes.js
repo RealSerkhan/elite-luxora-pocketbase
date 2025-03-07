@@ -15,7 +15,7 @@ router.get('/projects', getProjects);
 router.get('/projects/:id', getProjectById);
 
 // ✅ Protected Routes (Only authenticated users can create, update, and delete)
-router.post('/projects', authenticateUser, createProject);
+router.post('/projects', createProject);
 router.put('/projects/:id', authenticateUser, updateProject);
 router.delete('/projects/:id', authenticateUser, deleteProject);
 

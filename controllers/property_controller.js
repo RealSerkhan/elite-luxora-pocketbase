@@ -1,6 +1,11 @@
 import pb from '../config/database.js';
 import Property from '../models/property.js';
-import {buildBooleanMatch,buildExactMatch,buildKeywordSearch,buildMultiSelectFilter,buildMultiSelectJSONFilter,buildMultiSelectNumberFilter,buildNumericRange} from '../utils/filter.js';
+import fs from 'fs';
+
+
+
+import {addCondition, buildBooleanMatch,buildExactMatch,buildKeywordSearch,buildMultiSelectFilter,buildMultiSelectJSONFilter,buildMultiSelectNumberFilter,buildNumericRange,buildSortOption} from '../utils/filter.js';
+import { appendBodyToForm, appendFilesToForm } from '../utils/form_data_helper.js';
 
 
 export const getProperties = async (req, res) => {
@@ -10,6 +15,9 @@ export const getProperties = async (req, res) => {
         // ✅ Build the filter in a separate function
         const filter_query = buildFilterQuery(req, lang);
 
+         // ✅ Build the sort option
+         const sortOption = buildSortOption(req);
+
         // ✅ Pagination
         const page = parseInt(req.query.page) || 1;
         const per_page = parseInt(req.query.per_page) || 10;
@@ -18,9 +26,9 @@ export const getProperties = async (req, res) => {
 
         // ✅ Fetch filtered properties from PocketBase
         const result = await pb.collection('properties').getList(page, per_page, {
-            sort: '-created',
+            sort: sortOption,
             filter: filter_query || undefined,
-            expand: 'project_id,developer_id,owner_id,agent_id,category_ids,currency_id,area_id,city_id,country_id'
+            expand: 'project_id,project_id.developer_id,project_id.city_id,project_id.country_id,project_id.area_id, owner_id,agent_id,category_ids,currency_id'
         });
 
         // ✅ Transform raw PocketBase data into `Property` objects
@@ -42,8 +50,9 @@ function buildFilterQuery(req, lang) {
     let filter = "";
   
     // 1. Single-value exact matches
-    filter = addCondition(filter, buildExactMatch(req.query.city, 'city_id'));
-    filter = addCondition(filter, buildExactMatch(req.query.country, 'country_id'));
+    filter = addCondition(filter, buildExactMatch(req.query.city, 'project_id.city_id'));
+    filter = addCondition(filter, buildExactMatch(req.query.country, 'project_id.country_id'));
+    filter = addCondition(filter, buildExactMatch(req.query.country, 'project_id.area_id'));
     filter = addCondition(filter, buildExactMatch(req.query.project_id, 'project_id'));
     filter = addCondition(filter, buildExactMatch(req.query.agent_id, 'agent_id'));
   
@@ -80,10 +89,7 @@ function buildFilterQuery(req, lang) {
     return filter;
   }
 
-  function addCondition(query, condition) {
-    if (!condition) return query;  // Nothing to add
-    return query ? `${query} && ${condition}` : condition;
-  }
+
 
   
 
@@ -102,15 +108,40 @@ export const getProperty= async (req, res) => {
 /**
  * 📌 Create a new property
  */
-export const addProperty= async (req, res) => {
+export const addProperty = async (req, res) => {
     try {
-        const createdProperty = await pb.collection('properties').create(req.body);
-        res.status(201).json({ success: true, id: createdProperty.id, data: createdProperty });
-    } catch (error) {
-        res.status(400).json({ success: false, error: error });
-    }
-};
+      const images = req.files['images'] || [];
+      const videos = req.files['videos'] || [];
+      const formData = new FormData();
+  
+      appendBodyToForm(formData,req);
 
+  
+      // 2️⃣ Append multiple files (if you have a 'images' and videos File field in PocketBase)
+      appendFilesToForm(formData,images);
+      appendFilesToForm(formData,videos);
+
+
+      console.log(formData);
+  
+      // 3️⃣ Create the property record in PocketBase
+      const newProperty = await pb.collection('properties').create(formData);
+  
+      // 4️⃣ Clean up temp files
+      if (images) {
+        images.forEach(file => fs.unlinkSync(file.path));
+      }
+      if (videos) {
+        videos.forEach(file => fs.unlinkSync(file.path));
+      }
+  
+      // 5️⃣ Return response
+      res.json({ success: true, data: newProperty });
+    } catch (error) {
+      console.error("Error creating property:", error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  };
 
 /**
  * 📌 Update a property

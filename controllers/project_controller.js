@@ -1,6 +1,8 @@
 import pb from '../config/database.js';
 import Project from '../models/project.js';
 import { getLanguage } from '../utils/get_language.js';
+import {addCondition,buildExactMatch,} from '../utils/filter.js';
+
 
 /**
  * 📌 Get all projects (with filtering & pagination)
@@ -12,11 +14,12 @@ export const getProjects = async (req, res) => {
         let filter_query = ""; // Initialize filter query
 
         if (req.query.title) filter_query += `title ~ "${req.query.title}"`;
-        if (req.query.location) filter_query += `${filter_query ? ' && ' : ''}address.city = "${req.query.location}"`;
-        if (req.query.developer) filter_query += `${filter_query ? ' && ' : ''}developer_id.name = "${req.query.developer}"`;
-        if (req.query.country) filter_query += `${filter_query ? ' && ' : ''}address.country = "${req.query.country}"`;
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.city, 'city_id'));
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.area, 'area_id'));
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.country, 'country_id'));
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.developer, 'developer._id.name'));
 
-        const expand_fields = ['developer_id'];
+        const expand_fields = ['developer_id,city_id,area_id,country_id'];
         const expand_query = expand_fields.join(',');
 
         const page = parseInt(req.query.page) || 1;
@@ -73,16 +76,17 @@ export const createProject = async (req, res) => {
             title, 
             down_payment, during_construction_payment, on_handover_payment,
             project_announcement_date, construction_started_date, expected_completion_date,
-            master_plan, location_nearby_attractions, amenities, address, faq,
-            developer_id, units, launch_price, goverment_fee, booking_started_date
+            master_plan, location_nearby_attractions, amenities,geography, faq,
+            developer_id, units, launch_price, goverment_fee, booking_started_date,city_id,area_id,country_id
         } = req.body;
 
         const createdProject = await pb.collection('projects').create({
             title,
             down_payment, during_construction_payment, on_handover_payment,
             project_announcement_date, construction_started_date, expected_completion_date,
-            master_plan, location_nearby_attractions, amenities, address, faq,
-            developer_id, units, launch_price, goverment_fee, booking_started_date
+            master_plan, location_nearby_attractions, amenities, geography, faq,
+            developer_id, units, launch_price, goverment_fee, booking_started_date,city_id,
+            country_id,area_id
         });
 
         res.status(201).json({ success: true, id: createdProject.id, data: createdProject });

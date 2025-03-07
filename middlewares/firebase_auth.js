@@ -1,13 +1,20 @@
 import admin from 'firebase-admin';
 import dotenv from 'dotenv';
 import pb from '../config/database.js';
+import fs from 'fs';
 
 dotenv.config();
 
-// ✅ Initialize Firebase Admin SDK
+// ✅ Load the service account JSON
+const serviceAccount = JSON.parse(
+  fs.readFileSync('./firebase-service-account.json', 'utf8')
+);
+
+// ✅ Initialize Firebase Admin SDK with cert
 if (!admin.apps.length) {
     admin.initializeApp({
-        credential: admin.credential.applicationDefault()
+        credential: admin.credential.cert(serviceAccount),
+        // optionally specify: projectId, databaseURL, etc. if needed
     });
 }
 
@@ -20,6 +27,7 @@ const verifyFirebaseToken = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({ success: false, message: "Unauthorized: No token provided" });
         }
+        console.log(token);
 
         // ✅ Verify Firebase Token
         const decodedToken = await admin.auth().verifyIdToken(token);
@@ -30,13 +38,13 @@ const verifyFirebaseToken = async (req, res, next) => {
         try {
             pbUser = await pb.collection('users').getFirstListItem(`email="${decodedToken.email}"`);
         } catch (error) {
-            // ✅ Create new user in PocketBase if not found (Set a random password)
+            // ✅ Create new user in PocketBase if not found
             pbUser = await pb.collection('users').create({
                 email: decodedToken.email,
                 name: decodedToken.name || "Firebase User",
-                emailVisibilty:true,
-                auth_type: "google", // ✅ Track users who signed up with Google
-                password: Math.random().toString(36).slice(-8), // ✅ Set a random password
+                emailVisibilty: true,
+                auth_type: "google",
+                password: Math.random().toString(36).slice(-8),
                 password_confirm: Math.random().toString(36).slice(-8)
             });
         }
@@ -47,11 +55,11 @@ const verifyFirebaseToken = async (req, res, next) => {
             process.env.PB_ADMIN_PASSWORD
         );
 
-        // ✅ Authenticate user using PocketBase Admin API Token
-        const pbAuthToken = await pb.collection('users').authRefresh({expand:adminAuth.token});
+        // ✅ Attempt to refresh user auth with admin token
+        const pbAuthToken = await pb.collection('users').authRefresh({ expand: adminAuth.token });
 
-        req.pocketbaseToken = pbAuthToken.token; // Attach PocketBase Token
-        req.pocketbaseUser = pbUser; // Attach user data
+        req.pocketbaseToken = pbAuthToken.token;
+        req.pocketbaseUser = pbUser;
 
         next();
     } catch (error) {

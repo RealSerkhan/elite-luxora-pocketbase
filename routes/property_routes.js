@@ -1,5 +1,18 @@
 import express from 'express';
+
 import { addProperty, deleteProperty, getProperties, updateProperty,getProperty } from '../controllers/property_controller.js';
+import upload from '../config/multer.js';
+
+
+
+const fileFields = [
+    { name: 'images', maxCount: 10 },
+    { name: 'videos', maxCount: 10 }
+  ];
+  
+
+
+
 
 const router = express.Router();
 
@@ -7,7 +20,7 @@ const router = express.Router();
 router.get('/get-properties', getProperties);
 
 // ✅ Route to add property
-router.post('/add-property', addProperty);
+router.post('/add-property', upload.fields(fileFields), addProperty);
 
 // 📌 Route to get a property
 router.get('/get-property/:id', getProperty);
