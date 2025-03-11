@@ -1,3 +1,4 @@
+import { baseUrl } from '../config/database.js';
 import Agent from './agent.js';
 import BaseModel from './base_model.js';
 import Category from './category.js';
@@ -35,7 +36,9 @@ class Property extends BaseModel {
 
 
         // ✅ Images & Videos
-        this.images = data.images || [];
+        this.images = data.images = (data.images || []).map(fileName => {
+            return `${baseUrl}/api/files/${data['collectionId']}/${data.id}/${fileName}`;
+          });
         this.videos = data.videos || [];
 
         // ✅ Amenities & Deal Types
