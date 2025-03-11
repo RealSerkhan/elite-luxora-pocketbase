@@ -21,6 +21,7 @@ class Project extends BaseModel {
         this.construction_started_date =  Date(data.construction_started_date) || null;
         this.expected_completion_date =  Date(data.expected_completion_date) || null;
         this.booking_started_date =  Date(data.booking_started_date) || null;
+        this.is_ready = data.is_ready;
 
         // ✅ Master Plan (Image)
         this.master_plan = data.master_plan || "";
@@ -68,6 +69,9 @@ class Project extends BaseModel {
         // ✅ Pricing & Fees
         this.launch_price = data.launch_price ;
         this.goverment_fee = data.goverment_fee;
+
+
+        
     }
 }
 
