@@ -1,9 +1,6 @@
 import pb from '../config/database.js';
 import Property from '../models/property.js';
 import fs from 'fs';
-
-
-
 import {addCondition, buildBooleanMatch,buildExactMatch,buildKeywordSearch,buildMultiSelectFilter,buildMultiSelectJSONFilter,buildMultiSelectNumberFilter,buildNumericRange,buildSortOption} from '../utils/filter.js';
 import { appendBodyToForm, appendFilesToForm } from '../utils/form_data_helper.js';
 
@@ -98,8 +95,13 @@ function buildFilterQuery(req, lang) {
  */
 export const getProperty= async (req, res) => {
     try {
-        const property = await pb.collection('properties').getOne(req.params.id);
-        res.json(property);
+        const lang = req.headers['accept-language'] || "en";
+
+        const property = await pb.collection('properties').getOne(req.params.id,{
+            expand: 'project_id,project_id.developer_id,project_id.city_id,project_id.country_id,project_id.area_id, owner_id,agent_id,category_ids,currency_id'
+
+        });
+        res.json(new Property(property,lang));
     } catch (error) {
         res.status(404).json({ success: false, error: "Property not found" });
     }
