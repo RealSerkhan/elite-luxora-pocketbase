@@ -52,10 +52,10 @@ class Project extends BaseModel {
 
         
         // ✅ Geography
-        this.geography = data.address ? {
-            address_name: data.address.address_name || "",
-            lat: data.address.lat || 0,
-            lon: data.address.lon || 0,
+        this.geography = data.geography ? {
+            address_name: data.geography.address_name || "",
+            lat: data.geography.lat || 0,
+            lon: data.geography.lon || 0,
 
         } : null;
 
