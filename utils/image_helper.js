@@ -1,4 +1,4 @@
-import { baseUrl } from "../config/database";
+import { baseUrl } from "../config/database.js";
 
 export const generateImageUrls = (collectionId, recordId, images = []) => {
     return images.map(fileName => `${baseUrl}/api/files/${collectionId}/${recordId}/${fileName}`);

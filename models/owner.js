@@ -1,4 +1,5 @@
 import { generateImageUrl } from '../utils/image_helper.js';
+import BaseModel from './base_model.js';
 
 class Owner extends BaseModel {
     constructor(data) {
