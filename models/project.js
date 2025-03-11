@@ -24,7 +24,7 @@ class Project extends BaseModel {
         this.is_ready = data.is_ready;
 
         // ✅ Master Plan (Image)
-        this.master_plan = data.master_plan || "";
+        this.master_plan = data.master_plan;
 
         // ✅ Location Nearby Attractions
         this.location_nearby_attractions = data.location_nearby_attractions || {};

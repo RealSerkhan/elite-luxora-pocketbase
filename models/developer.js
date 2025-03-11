@@ -1,3 +1,4 @@
+import { generateImageUrl } from '../utils/image_helper.js';
 import BaseModel from './base_model.js';
 
 class Developer extends BaseModel {
@@ -6,9 +7,9 @@ class Developer extends BaseModel {
         
         // ✅ Localized Name
         this.name = data[`name_${lang}`] || data.name_en;
+
+        this.image_link = generateImageUrl(data.collectionId, data.id, data.image_link);
         
-        // ✅ Image Link
-        this.image_link = data.image_link || "";
     }
 }
 

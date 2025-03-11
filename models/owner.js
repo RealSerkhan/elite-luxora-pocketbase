@@ -1,4 +1,4 @@
-import BaseModel from './base_model.js';
+import { generateImageUrl } from '../utils/image_helper.js';
 
 class Owner extends BaseModel {
     constructor(data) {
@@ -8,7 +8,8 @@ class Owner extends BaseModel {
         this.name = data.name;
         
         // ✅ Image Link
-        this.image_link = data.image_link || "";
+        this.image_link = generateImageUrl(data.collectionId, data.id, data.image_link);
+        
     }
 }
 

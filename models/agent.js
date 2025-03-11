@@ -1,3 +1,4 @@
+import { generateImageUrl } from '../utils/image_helper.js';
 import BaseModel from './base_model.js';
 
 class Agent extends BaseModel {
@@ -16,7 +17,8 @@ class Agent extends BaseModel {
 
         this.about = data[`about${lang}`] || data.about_en;
 
-        this.image_link = data.image_link || "";
+        // ✅ Image Link
+        this.image_link = generateImageUrl(data.collectionId, data.id, data.image_link);
     }
 }
 
