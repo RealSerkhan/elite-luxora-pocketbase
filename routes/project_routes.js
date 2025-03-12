@@ -5,13 +5,17 @@ import {
     getProjectById,
     createProject,
     updateProject,
-    deleteProject
+    deleteProject,
+    getSimilarProjects
 } from '../controllers/project_controller.js';
 
 const router = express.Router();
 
 // ✅ Public Routes
 router.get('/projects', getProjects);
+
+router.get('/similar-projects', getSimilarProjects);
+
 router.get('/projects/:id', getProjectById);
 
 // ✅ Protected Routes (Only authenticated users can create, update, and delete)

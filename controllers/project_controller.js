@@ -35,10 +35,58 @@ export const getProjects = async (req, res) => {
         const transformed_items = result.items.map(project => new Project(project,lang));
 
         res.json({
+            success: true,
             total_items: result.totalItems,
             total_pages: result.totalPages,
             current_page: page,
             per_page: per_page,
+            items: transformed_items,
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+
+/**
+ * 📌 Get all projects (with filtering & pagination)
+ */
+export const getSimilarProjects = async (req, res) => {
+    try {
+        const lang = req.headers['accept-language'] || "en"; // ✅ Get language from headers
+        const expand_fields = ['developer_id,city_id,area_id,country_id'];
+
+
+        const projectResponse = await pb.collection('projects').getOne(req.query.id, {
+            expand: expand_fields
+        });
+        const project=new Project(projectResponse,lang);
+
+
+        let filter_query = ""; // Initialize filter query
+
+
+        if (req.query.title) filter_query += `title ~ "${req.query.title}"`;
+        filter_query = addCondition(filter_query, buildExactMatch(project.location.city.id, 'city_id'),"||");
+        filter_query = addCondition(filter_query, buildExactMatch(project.location.area.id, 'area_id'),"||");
+        filter_query = addCondition(filter_query, buildExactMatch(project.developer.id, 'developer_id'),"||");
+
+        const expand_query = expand_fields.join(',');
+
+
+
+        const result = await pb.collection('projects').getList(0, 3, {
+            sort: '-created',
+            filter: filter_query || undefined,
+            expand: expand_query
+        });
+
+        // ✅ Transform Response
+        const transformed_items = result.items.map(project => new Project(project,lang)).filter(project=>project.id!=req.query.id);
+
+
+        res.json({
+            success: true,
             items: transformed_items,
         });
     } catch (error) {

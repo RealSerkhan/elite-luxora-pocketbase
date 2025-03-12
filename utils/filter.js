@@ -1,8 +1,7 @@
-export function addCondition(query, condition) {
+export function addCondition(query, condition, operator = "&&") {
   if (!condition) return query;  // Nothing to add
-  return query ? `${query} && ${condition}` : condition;
+  return query ? `${query} ${operator} ${condition}` : condition;
 }
-  
   
   export function buildMultiSelectFilter(paramValue, fieldName, operator = "||") {
     if (!paramValue) return null;
