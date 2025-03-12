@@ -61,10 +61,15 @@ class Project extends BaseModel {
         } : null;
 
         // ✅ Units Available
-        this.units = data.units ? {
-            type: data.units.type || "",
-            size: data.units.size || 0
-        } : null;
+        this.units = data.units ? data.units.map(unit=>{
+            return {
+                type: unit.type || "",
+                size: unit.size || 0,
+                layout_type: unit.layout_type,
+                image: unit.image
+            
+            };
+        }) : null;
 
         // ✅ Pricing & Fees
         this.launch_price = data.launch_price ;
