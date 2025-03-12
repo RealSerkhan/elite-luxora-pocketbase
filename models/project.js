@@ -68,10 +68,13 @@ class Project extends BaseModel {
 
         // ✅ Pricing & Fees
         this.launch_price = data.launch_price ;
-        this.goverment_fee = data.goverment_fee;
+
+        this.goverment_fee = data.goverment_fee?data.goverment_fee:null;
+
+        this.about = data.about? data.about:null;
+        this.number_of_buildings = data.number_of_buildings? data.number_of_buildings:1;
 
 
-        
     }
 }
 
