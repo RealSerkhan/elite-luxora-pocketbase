@@ -78,6 +78,8 @@ class Project extends BaseModel {
 
         this.about = data.about? data.about:null;
         this.number_of_buildings = data.number_of_buildings? data.number_of_buildings:1;
+        this.master_plan_info = data.master_plan_info? data.master_plan_info:null;
+
 
 
     }
