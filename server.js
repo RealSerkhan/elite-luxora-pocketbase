@@ -6,6 +6,9 @@ import userRoutes from './routes/user_routes.js';
 import projectRoutes from './routes/project_routes.js';
 import contactRoutes from './routes/contact_routes.js';
 import aboutUsRoutes from './routes/about_us_routes.js';
+import transactionsRoutes from './routes/transactions_route.js';
+import agentsRoute from './routes/agents_route.js';
+
 import cors from 'cors';
 import i18next from './config/i18n.js';
 import middleware from 'i18next-http-middleware';
@@ -56,6 +59,13 @@ app.use('/api', contactRoutes);
 
 // ✅ About Us Routes
 app.use('/api', aboutUsRoutes);
+
+
+// ✅ Transactions Routes
+app.use('/api/transactions', transactionsRoutes);
+
+// ✅ Agent Routes
+app.use('/api/agents', agentsRoute);
 
 
 

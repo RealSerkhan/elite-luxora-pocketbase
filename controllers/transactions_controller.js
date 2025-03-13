@@ -1,11 +1,14 @@
 import pb from '../config/database.js';
 
 import { DEAL_TYPES } from '../config/constants.js';
+import { addCondition, buildExactMatch, buildNumericRange, buildSortOption } from '../utils/filter.js';
+import Transaction from '../models/transaction.js';
+import PaginatedResponse from '../models/paginated_response.js';
 
 /**
  * 📌 Create a Closed Deal
  */
-export const createClosedDeal = async (req, res) => {
+export const createTransaction = async (req, res) => {
     try {
         const { location, deal_type, deal_date, property_type, bedrooms_count, commission, total_price, currency, agent_id } = req.body;
 
@@ -48,16 +51,20 @@ export const createClosedDeal = async (req, res) => {
 /**
  * 📌 Get All Closed Deals (with filters)
  */
-export const getClosedDeals = async (req, res) => {
+export const getTransactions = async (req, res) => {
     try {
+        const lang = req.headers['accept-language'] || "en";
         let filter_query = "";
+        
+        filter_query = addCondition(filter_query,buildExactMatch(req.query.agent_id,'agent_id'));
+        filter_query = addCondition(filter_query,buildExactMatch(req.query.property_type,'property_id.property_type'));
+        filter_query = addCondition(filter_query,buildExactMatch(req.query.deal_type,'deal_type'));
+        filter_query = addCondition(filter_query,buildExactMatch(req.query.currency,'currency'));
+        filter_query=addCondition(filter_query,buildNumericRange(req.query.min_price, req.query.max_price, 'price'));
+        
 
-        if (req.query.deal_type) filter_query += `deal_type = "${req.query.deal_type}"`;
-        if (req.query.property_type) filter_query += `${filter_query ? ' && ' : ''}property_type = "${req.query.property_type}"`;
-        if (req.query.min_price) filter_query += `${filter_query ? ' && ' : ''}total_price >= ${req.query.min_price}`;
-        if (req.query.max_price) filter_query += `${filter_query ? ' && ' : ''}total_price <= ${req.query.max_price}`;
-        if (req.query.currency) filter_query += `${filter_query ? ' && ' : ''}currency = "${req.query.currency}"`;
-
+        // ✅ Build the sort option
+        const sortOption = buildSortOption(req);
         // **Pagination**
         const page = parseInt(req.query.page) || 1;
         const per_page = parseInt(req.query.per_page) || 10;
@@ -66,17 +73,19 @@ export const getClosedDeals = async (req, res) => {
 
         // ✅ Fetch deals from PocketBase
         const result = await pb.collection('transactions').getList(page, per_page, {
-            sort: '-deal_date',
+            sort: sortOption,
             filter: filter_query || undefined
         });
 
-        res.json({
-            total_items: result.totalItems,
-            total_pages: result.totalPages,
-            current_page: page,
-            per_page: per_page,
-            deals: result.items
-        });
+        const transactions = result.items.map(item => new Transaction(item, lang));
+
+        res.json( new PaginatedResponse(
+            result.totalItems,
+            result.totalPages,
+            page,
+            per_page,
+            transactions
+        ));
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -85,7 +94,7 @@ export const getClosedDeals = async (req, res) => {
 /**
  * 📌 Get a Single Closed Deal by ID
  */
-export const getClosedDealById = async (req, res) => {
+export const getTransactionsById = async (req, res) => {
     try {
         const deal = await pb.collection('transactions').getOne(req.params.id);
         res.json({ success: true, data: deal });

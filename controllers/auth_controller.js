@@ -9,7 +9,7 @@ import { isUserRegistered } from '../middlewares/auth_middleware.js';
 /**
  * 📌 User Login API
  */
-export const login= async (req, res) => {
+export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -32,14 +32,14 @@ export const login= async (req, res) => {
 export const sendOtp = async (req, res) => {
     try {
         const { email } = req.body;
-   
+
         let tempUser = null;
 
-        if(!isValidEmail(email)){
+        if (!isValidEmail(email)) {
             return res.status(400).json({ success: false, message: "Email is not valid" });
         }
-        let isRegistered=await isUserRegistered(email);
-        if(isRegistered){
+        let isRegistered = await isUserRegistered(email);
+        if (isRegistered) {
             return res.status(400).json({ success: false, message: "Email is in Use" });
 
         }
@@ -91,7 +91,7 @@ export const sendOtp = async (req, res) => {
 /**
  * 📌 Step 2: Verify OTP and Complete Registration
  */
-export const verifyOtp= async (req, res) => {
+export const verifyOtp = async (req, res) => {
     try {
         const { email, otp, password, passwordConfirm } = req.body;
 
@@ -122,7 +122,7 @@ export const verifyOtp= async (req, res) => {
             email,
             password,
             passwordConfirm,
-            "emailVisibility":true
+            "emailVisibility": true
         });
 
         console.log("User registered successfully:", newUser);

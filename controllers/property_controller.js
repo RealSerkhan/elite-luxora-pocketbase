@@ -20,13 +20,15 @@ export const getProperties = async (req, res) => {
         const per_page = parseInt(req.query.per_page) || 10;
 
         console.log(`Applied Filter: ${filter_query}, Page: ${page}, PerPage: ${per_page}`);
-
+        const expand_fields=['project_id,project_id.developer_id,project_id.city_id,project_id.country_id,project_id.area_id, owner_id,agent_id,category_ids,currency_id'];
         // ✅ Fetch filtered properties from PocketBase
         const result = await pb.collection('properties').getList(page, per_page, {
             sort: sortOption,
             filter: filter_query || undefined,
-            expand: 'project_id,project_id.developer_id,project_id.city_id,project_id.country_id,project_id.area_id, owner_id,agent_id,category_ids,currency_id'
+            expand: expand_fields
         });
+    
+
 
         // ✅ Transform raw PocketBase data into `Property` objects
         const properties = result.items.map(item => new Property(item, lang));
