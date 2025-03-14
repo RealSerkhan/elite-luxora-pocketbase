@@ -34,17 +34,39 @@ export const getAgents = async (req, res) => {
         // ✅ Fetch deals from PocketBase
         const result = await pb.collection('agents').getList(page, per_page, {
             sort: sortOption,
-            filter: filter_query || undefined
+            filter: filter_query || undefined,
         });
 
-        const transactions = result.items.map(item => new Agent(item, lang));
+
+
+
+        const agents = await Promise.all(
+            result.items.map(async agentData => {
+                const agent = new Agent(agentData, lang);
+                const properties = await pb.collection('properties').getFullList({
+                    filter: `agent_id = "${agent.id}"`,
+                    fields: "id,deal_type" // ✅ Only fetch the minimum field to improve performance
+                });
+                // ✅ Count how many properties have deal_type = "sale"
+                const salesCount = properties.filter(prop => prop.deal_type === "sale").length;
+
+                // ✅ Count how many properties have deal_type = "rent"
+                const rentsCount = properties.filter(prop => prop.deal_type === "rent").length;
+
+                agent.sales_count = salesCount;
+                agent.rents_count = rentsCount;
+                return agent;
+
+            }));
+        console.log(agents);
+
 
         res.json(new PaginatedResponse(
             result.totalItems,
             result.totalPages,
             page,
             per_page,
-            transactions
+            agents
         ));
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

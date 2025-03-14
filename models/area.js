@@ -9,8 +9,8 @@ class Area extends BaseModel {
         // ✅ Localized Name
         this.name = data[`name_${lang}`] || data.name_en;
 
-        this.total_reviews = data.total_reviews;
-        this.review_point = data.review_point;
+        this.reviews = data.reviews;
+
         // ✅ Image Link
         this.image_link = generateImageUrl(data.collectionId, data.id, data.image_link);
     }
