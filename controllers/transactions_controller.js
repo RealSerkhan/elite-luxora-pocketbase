@@ -24,7 +24,7 @@ export const createTransaction = async (req, res) => {
 
         // ✅ Check if agent exists in `agents` collection
         try {
-             await pb.collection('agents').getOne(agent_id);
+            await pb.collection('agents').getOne(agent_id);
         } catch (error) {
             return res.status(400).json({ success: false, message: "Invalid agent_id. Agent not found." });
         }
@@ -55,13 +55,13 @@ export const getTransactions = async (req, res) => {
     try {
         const lang = req.headers['accept-language'] || "en";
         let filter_query = "";
-        
-        filter_query = addCondition(filter_query,buildExactMatch(req.query.agent_id,'agent_id'));
-        filter_query = addCondition(filter_query,buildExactMatch(req.query.property_type,'property_id.property_type'));
-        filter_query = addCondition(filter_query,buildExactMatch(req.query.deal_type,'deal_type'));
-        filter_query = addCondition(filter_query,buildExactMatch(req.query.currency,'currency'));
-        filter_query=addCondition(filter_query,buildNumericRange(req.query.min_price, req.query.max_price, 'price'));
-        
+
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.agent_id, 'agent_id'));
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.property_type, 'property_id.property_type'));
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.deal_type, 'deal_type'));
+        filter_query = addCondition(filter_query, buildExactMatch(req.query.currency, 'currency'));
+        filter_query = addCondition(filter_query, buildNumericRange(req.query.min_price, req.query.max_price, 'price'));
+
 
         // ✅ Build the sort option
         const sortOption = buildSortOption(req);
@@ -79,7 +79,7 @@ export const getTransactions = async (req, res) => {
 
         const transactions = result.items.map(item => new Transaction(item, lang));
 
-        res.json( new PaginatedResponse(
+        res.json(new PaginatedResponse(
             result.totalItems,
             result.totalPages,
             page,
@@ -102,3 +102,4 @@ export const getTransactionsById = async (req, res) => {
         res.status(404).json({ success: false, message: "Closed deal not found." });
     }
 };
+

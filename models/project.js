@@ -7,7 +7,7 @@ import Developer from './developer.js';
 class Project extends BaseModel {
     constructor(data, lang = "en") {
         super(data);
-        
+
         // ✅ Localized Title
         this.title = data[`title_${lang}`] || data.title_en;
 
@@ -17,10 +17,10 @@ class Project extends BaseModel {
         this.on_handover_payment = data.on_handover_payment || 0;
 
         // ✅ Important Dates
-        this.project_announcement_date =  Date(data.project_announcement_date) || null;
-        this.construction_started_date =  Date(data.construction_started_date) || null;
-        this.expected_completion_date =  Date(data.expected_completion_date) || null;
-        this.booking_started_date =  Date(data.booking_started_date) || null;
+        this.project_announcement_date = data.project_announcement_date ? Date(data.project_announcement_date) : null;
+        this.construction_started_date = data.construction_started_date ? Date(data.construction_started_date) : null;
+        this.expected_completion_date = data.expected_completion_date ? Date(data.expected_completion_date) : null;
+        this.booking_started_date = data.booking_started_date ? Date(data.booking_started_date) : null;
         this.is_ready = data.is_ready;
 
         // ✅ Master Plan (Image)
@@ -44,14 +44,14 @@ class Project extends BaseModel {
         this.faq = data.faq || {};
 
         // ✅ Developer (Relation)
-        this.developer = data.expand?.developer_id?new Developer(data.expand?.developer_id,lang):{id:data?.developer_id};
+        this.developer = data.expand?.developer_id ? new Developer(data.expand?.developer_id, lang) : { id: data?.developer_id };
         this.location = {
-            "area":    data.expand?.area_id? new Area(data.expand?.area_id,lang) : { id: data.area_id },
-            "city" :   data.expand?.city_id? new City(data.expand?.city_id,lang) : { id: data.city_id },
-            "country": data.expand?.country_id? new Country(data.expand?.country_id,lang) : { id: data.country_id }
-          };
+            "area": data.expand?.area_id ? new Area(data.expand?.area_id, lang) : { id: data.area_id },
+            "city": data.expand?.city_id ? new City(data.expand?.city_id, lang) : { id: data.city_id },
+            "country": data.expand?.country_id ? new Country(data.expand?.country_id, lang) : { id: data.country_id }
+        };
 
-        
+
         // ✅ Geography
         this.geography = data.geography ? {
             address_name: data.geography.address_name || "",
@@ -61,24 +61,24 @@ class Project extends BaseModel {
         } : null;
 
         // ✅ Units Available
-        this.units = data.units ? data.units.map(unit=>{
+        this.units = data.units ? data.units.map(unit => {
             return {
                 type: unit.type || "",
                 size: unit.size || 0,
                 layout_type: unit.layout_type,
                 image: unit.image
-            
+
             };
         }) : null;
 
         // ✅ Pricing & Fees
-        this.launch_price = data.launch_price ;
+        this.launch_price = data.launch_price;
 
-        this.goverment_fee = data.goverment_fee?data.goverment_fee:null;
+        this.goverment_fee = data.goverment_fee ? data.goverment_fee : null;
 
-        this.about = data.about? data.about:null;
-        this.number_of_buildings = data.number_of_buildings? data.number_of_buildings:1;
-        this.master_plan_info = data.master_plan_info? data.master_plan_info:null;
+        this.about = data.about ? data.about : null;
+        this.number_of_buildings = data.number_of_buildings ? data.number_of_buildings : 1;
+        this.master_plan_info = data.master_plan_info ? data.master_plan_info : null;
 
 
 

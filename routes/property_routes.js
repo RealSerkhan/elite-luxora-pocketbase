@@ -1,15 +1,15 @@
 import express from 'express';
 
-import { addProperty, deleteProperty, getProperties, updateProperty,getProperty } from '../controllers/property_controller.js';
+import { addProperty, deleteProperty, getProperties, updateProperty, getProperty, getCategories } from '../controllers/property_controller.js';
 import upload from '../config/multer.js';
 
 
 
 const fileFields = [
-    { name: 'images', maxCount: 10 },
-    { name: 'videos', maxCount: 10 }
-  ];
-  
+  { name: 'images', maxCount: 10 },
+  { name: 'videos', maxCount: 10 }
+];
+
 
 
 
@@ -30,6 +30,10 @@ router.put('/update-property/:id', updateProperty);
 
 // 📌 Route to delete property
 router.delete('/delete-property/:id', deleteProperty);
+
+// ✅ Route to get properties
+router.get('/get-categories', getCategories);
+
 
 
 export default router;

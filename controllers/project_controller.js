@@ -1,7 +1,7 @@
 import pb from '../config/database.js';
 import Project from '../models/project.js';
 import { getLanguage } from '../utils/get_language.js';
-import {addCondition,buildExactMatch,} from '../utils/filter.js';
+import { addCondition, buildExactMatch, } from '../utils/filter.js';
 
 
 /**
@@ -28,11 +28,12 @@ export const getProjects = async (req, res) => {
         const result = await pb.collection('projects').getList(page, per_page, {
             sort: '-created',
             filter: filter_query || undefined,
+            fields: "title_en,title_ar,expected_completion_date,launch_price,expand.developer_id,expand.area_id,expand.city_id,payment_plan,down_payment,during_construction_payment,on_handover_payment,is_ready",
             expand: expand_query
         });
 
         // ✅ Transform Response
-        const transformed_items = result.items.map(project => new Project(project,lang));
+        const transformed_items = result.items.map(project => new Project(project, lang));
 
         res.json({
             success: true,
@@ -60,16 +61,16 @@ export const getSimilarProjects = async (req, res) => {
         const projectResponse = await pb.collection('projects').getOne(req.query.id, {
             expand: expand_fields
         });
-        const project=new Project(projectResponse,lang);
+        const project = new Project(projectResponse, lang);
 
 
         let filter_query = ""; // Initialize filter query
 
 
         if (req.query.title) filter_query += `title ~ "${req.query.title}"`;
-        filter_query = addCondition(filter_query, buildExactMatch(project.location.city.id, 'city_id'),"||");
-        filter_query = addCondition(filter_query, buildExactMatch(project.location.area.id, 'area_id'),"||");
-        filter_query = addCondition(filter_query, buildExactMatch(project.developer.id, 'developer_id'),"||");
+        filter_query = addCondition(filter_query, buildExactMatch(project.location.city.id, 'city_id'), "||");
+        filter_query = addCondition(filter_query, buildExactMatch(project.location.area.id, 'area_id'), "||");
+        filter_query = addCondition(filter_query, buildExactMatch(project.developer.id, 'developer_id'), "||");
 
         const expand_query = expand_fields.join(',');
 
@@ -82,7 +83,7 @@ export const getSimilarProjects = async (req, res) => {
         });
 
         // ✅ Transform Response
-        const transformed_items = result.items.map(project => new Project(project,lang)).filter(project=>project.id!=req.query.id);
+        const transformed_items = result.items.map(project => new Project(project, lang)).filter(project => project.id != req.query.id);
 
 
         res.json({
@@ -100,16 +101,16 @@ export const getSimilarProjects = async (req, res) => {
 export const getProjectById = async (req, res) => {
     try {
 
-       const lang =getLanguage(req);
+        const lang = getLanguage(req);
 
-        
+
         const project = await pb.collection('projects').getOne(req.params.id, {
             expand: 'developer_id'
         });
 
         // ✅ Remove `developer_id` and expand data instead
-        
-        res.status(201).json({ success: true, data:new Project(project,lang)});
+
+        res.status(201).json({ success: true, data: new Project(project, lang) });
     } catch (error) {
         res.status(404).json({ success: false, error: "Project not found" });
     }
@@ -121,11 +122,11 @@ export const getProjectById = async (req, res) => {
 export const createProject = async (req, res) => {
     try {
         const {
-            title, 
+            title,
             down_payment, during_construction_payment, on_handover_payment,
             project_announcement_date, construction_started_date, expected_completion_date,
-            master_plan, location_nearby_attractions, amenities,geography, faq,
-            developer_id, units, launch_price, goverment_fee, booking_started_date,city_id,area_id,country_id
+            master_plan, location_nearby_attractions, amenities, geography, faq,
+            developer_id, units, launch_price, goverment_fee, booking_started_date, city_id, area_id, country_id
         } = req.body;
 
         const createdProject = await pb.collection('projects').create({
@@ -133,8 +134,8 @@ export const createProject = async (req, res) => {
             down_payment, during_construction_payment, on_handover_payment,
             project_announcement_date, construction_started_date, expected_completion_date,
             master_plan, location_nearby_attractions, amenities, geography, faq,
-            developer_id, units, launch_price, goverment_fee, booking_started_date,city_id,
-            country_id,area_id
+            developer_id, units, launch_price, goverment_fee, booking_started_date, city_id,
+            country_id, area_id
         });
 
         res.status(201).json({ success: true, id: createdProject.id, data: createdProject });
