@@ -7,7 +7,7 @@ class Comment extends BaseModel {
         super(data);
 
         // ✅ Localized Name
-        this.name = data[`name_${lang}`] || data.name_en;
+        this.name = data.name;
 
         this.comment = data.comment;
 
