@@ -9,23 +9,24 @@ import Project from './project.js';
 class Property extends BaseModel {
     constructor(data, lang = "en") {
         super(data);
-        
+
         // ✅ Localized Name & Description
         this.name = data[`name_${lang}`] || data.name_en;
         this.description = data[`description_${lang}`] || data.description_en;
 
         // ✅ Basic Info
         this.price = data.price;
+        this.furnishing_status = data.furnishing_status;
         this.is_furnished = !!data.is_furnished;
         this.is_featured = !!data.is_featured;
         this.is_verified = !!data.is_verified;
-        this.posted_date = data.posted_date?new Date(data.posted_date) : null;
-        this.delivery_date =data.delivery_date? new Date(data.delivery_date) : null;
+        this.posted_date = data.posted_date ? new Date(data.posted_date) : null;
+        this.delivery_date = data.delivery_date ? new Date(data.delivery_date) : null;
         this.property_type = data.property_type;
 
-        
+
         // ✅ Currency (Relation)
-        this.currency = data.expand?.currency_id? new Currency(data.expand?.currency_id,lang) : { id: data.currency_id };
+        this.currency = data.expand?.currency_id ? new Currency(data.expand?.currency_id, lang) : { id: data.currency_id };
 
         // ✅ Living Space
         this.living_space = data.living_space ? {
@@ -47,13 +48,13 @@ class Property extends BaseModel {
         this.deal_types = data.deal_types || [];
 
         // ✅ Relations (Expanded Data or Raw IDs)
-        this.categories = data.expand?.category_ids?.map(category=>new Category(category,lang))  || data.category_ids || [];
-        this.owner = data.expand?.owner_id? new Owner(data.expand?.owner_id,lang) : { id: data.owner_id };
-        this.project = data.expand?.project_id? new Project(data.expand?.project_id,lang) : { id: data.project_id };
-        this.agent = data.expand?.agent_id? new Agent(data.expand?.agent_id,lang) : { id: data.agent_id };
+        this.categories = data.expand?.category_ids?.map(category => new Category(category, lang)) || data.category_ids || [];
+        this.owner = data.expand?.owner_id ? new Owner(data.expand?.owner_id, lang) : { id: data.owner_id };
+        this.project = data.expand?.project_id ? new Project(data.expand?.project_id, lang) : { id: data.project_id };
+        this.agent = data.expand?.agent_id ? new Agent(data.expand?.agent_id, lang) : { id: data.agent_id };
 
 
-        
+
 
 
         // ✅ Payment Plan

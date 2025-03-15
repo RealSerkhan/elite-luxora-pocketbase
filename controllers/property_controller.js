@@ -57,12 +57,34 @@ function buildFilterQuery(req, lang) {
     filter = addCondition(filter, buildExactMatch(req.query.agent_id, 'agent_id'));
 
     // 2. Multi-select: property_type, category_ids
-    filter = addCondition(filter, buildMultiSelectFilter(req.query.property_types, 'property_type'));
-    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.category_ids, 'category_ids'));
+    filter = addCondition(filter, buildMultiSelectFilter(req.query.property_types, 'property_type', '||'));
+
+    filter = addCondition(filter, buildMultiSelectFilter(req.query.furnishing_status, 'furnishing_status', '||'));
+
+    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.category_ids, 'category_ids', '||'));
+
 
     // 3. Bedrooms & Bathrooms multi-select
-    filter = addCondition(filter, buildMultiSelectNumberFilter(req.query.bedrooms, 'living_space.bedrooms'));
-    filter = addCondition(filter, buildMultiSelectNumberFilter(req.query.bathrooms, 'living_space.bathrooms'));
+
+    if (req.query.bedrooms) {
+        if (req.query.bedrooms > 7) {
+            const bedroomsCondition = buildNumericRange(0, 9999, 'living_space.bedrooms');
+            filter = addCondition(filter, bedroomsCondition);
+        }
+
+        filter = addCondition(filter, buildMultiSelectNumberFilter(req.query.bedrooms, 'living_space.bedrooms'));
+
+    }
+
+    if (req.query.bathrooms) {
+        if (req.query.bathrooms.includes(8)) {
+            const bathroomsConditon = buildNumericRange(0, 9999, 'living_space.bathrooms');
+            filter = addCondition(filter, bathroomsConditon);
+        }
+
+        filter = addCondition(filter, buildMultiSelectNumberFilter(req.query.bedrooms, 'living_space.bedrooms'));
+
+    }
 
     // 4. Price range
     const priceCondition = buildNumericRange(req.query.min_price, req.query.max_price, 'price');
@@ -78,13 +100,13 @@ function buildFilterQuery(req, lang) {
 
     // 7. Amenities & Deal Types (multi-select JSON)
     filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.amenities, 'amenities'));
-    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.deal_types, 'deal_types'));
+    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.deal_types, 'deal_types', '||'));
 
     // 8. Keyword search
     filter = addCondition(filter, buildKeywordSearch(req.query.keywords, lang));
 
     // 9. Virtual Viewings (multi-select JSON)
-    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.virtual_viewings, 'virtual_viewings'));
+    filter = addCondition(filter, buildMultiSelectJSONFilter(req.query.virtual_viewings, 'virtual_viewings', '||'));
 
     return filter;
 }
