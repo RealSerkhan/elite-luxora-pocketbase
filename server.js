@@ -8,6 +8,8 @@ import contactRoutes from './routes/contact_routes.js';
 import aboutUsRoutes from './routes/about_us_routes.js';
 import transactionsRoutes from './routes/transactions_route.js';
 import agentsRoute from './routes/agents_route.js';
+import commentsRoutes from './routes/comment_routes.js';
+
 
 import cors from 'cors';
 import i18next from './config/i18n.js';
@@ -35,7 +37,7 @@ app.use(middleware.handle(i18next));
 /**
  * 📌 PropertyRoutes
  */
-app.use('/api/property',propertyRoutes)
+app.use('/api/property', propertyRoutes)
 
 
 /**
@@ -66,6 +68,9 @@ app.use('/api/transactions', transactionsRoutes);
 
 // ✅ Agent Routes
 app.use('/api/agents', agentsRoute);
+
+// ✅ Agent Routes
+app.use('/api/comment', commentsRoutes);
 
 
 
