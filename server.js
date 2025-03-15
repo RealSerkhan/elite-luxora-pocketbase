@@ -9,6 +9,8 @@ import aboutUsRoutes from './routes/about_us_routes.js';
 import transactionsRoutes from './routes/transactions_route.js';
 import agentsRoute from './routes/agents_route.js';
 import commentsRoutes from './routes/comment_routes.js';
+import locationRoutes from './routes/location_routes.js';
+
 
 
 import cors from 'cors';
@@ -69,8 +71,12 @@ app.use('/api/transactions', transactionsRoutes);
 // ✅ Agent Routes
 app.use('/api/agents', agentsRoute);
 
-// ✅ Agent Routes
+// ✅ comment Routes
 app.use('/api/comment', commentsRoutes);
+
+
+// ✅ comment Routes
+app.use('/api/location', locationRoutes);
 
 
 

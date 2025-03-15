@@ -24,17 +24,3 @@ export const getComments = async (req, res) => {
     }
 };
 
-/**
- * 📌 Update About Us Information
- */
-export const updateAboutUs = async (req, res) => {
-    try {
-        const aboutInfo = await pb.collection('about_us').getFirstListItem();
-
-        const updatedAboutUs = await pb.collection('about_us').update(aboutInfo.id, req.body);
-
-        res.json({ success: true, message: "About Us updated successfully", data: updatedAboutUs });
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
-    }
-};
