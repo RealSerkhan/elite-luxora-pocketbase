@@ -47,6 +47,7 @@ export const getProjects = async (req, res) => {
             items: transformed_items,
         });
     } catch (error) {
+        console.log(error);
         res.status(400).json({ success: false, error: error.message });
     }
 };
@@ -189,7 +190,7 @@ export const getCityProjectCounts = async (req, res) => {
 
        const projects=projectsResponse.map(project=>new Project(project,lang));
 
-       console.log(projects);
+       
 
         // ✅ Aggregate counts for each city
         const cityProjectCounts = projects.reduce((acc, project) => {
@@ -215,7 +216,7 @@ export const getCityProjectCounts = async (req, res) => {
             data: cityCountsArray
         });
     } catch (error) {
-
+        console.log(error);
         res.status(400).json({ success: false, error: error.message });
     }
 };

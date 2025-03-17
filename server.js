@@ -20,6 +20,7 @@ import developerRoutes from './routes/developer_routes.js';
 import cors from 'cors';
 import i18next from './config/i18n.js';
 import middleware from 'i18next-http-middleware';
+import pb from './config/database.js';
 
 
 
@@ -28,6 +29,9 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+pb.autoCancellation(false);
+
+
 
 // ✅ Enable CORS for Frontend Access
 app.use(cors({

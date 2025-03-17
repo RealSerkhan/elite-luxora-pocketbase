@@ -1,5 +1,4 @@
 import express from 'express';
-import authenticateUser from '../middlewares/auth_middleware.js';
 import {
     getProjects,
     getProjectById,
@@ -24,7 +23,7 @@ router.get('/projects/:id', getProjectById);
 
 // ✅ Protected Routes (Only authenticated users can create, update, and delete)
 router.post('/projects', createProject);
-router.put('/projects/:id', authenticateUser, updateProject);
-router.delete('/projects/:id', authenticateUser, deleteProject);
+router.put('/projects/:id', updateProject);
+router.delete('/projects/:id', deleteProject);
 
 export default router;
