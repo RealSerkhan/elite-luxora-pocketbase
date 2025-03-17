@@ -1,7 +1,7 @@
 import pb from '../config/database.js';
 import Project from '../models/project.js';
 import { getLanguage } from '../utils/get_language.js';
-import { addCondition, buildExactMatch, } from '../utils/filter.js';
+import { addCondition, buildExactMatch, buildSortOption, } from '../utils/filter.js';
 
 
 /**
@@ -12,6 +12,9 @@ export const getProjects = async (req, res) => {
         const lang = req.headers['accept-language'] || "en"; // ✅ Get language from headers
 
         let filter_query = ""; // Initialize filter query
+
+        // ✅ Build the sort option
+        const sortOption = buildSortOption(req);
 
         if (req.query.title) filter_query += `title ~ "${req.query.title}"`;
         filter_query = addCondition(filter_query, buildExactMatch(req.query.city, 'city_id'));
@@ -26,8 +29,8 @@ export const getProjects = async (req, res) => {
         const per_page = parseInt(req.query.per_page) || 10;
 
         const result = await pb.collection('projects').getList(page, per_page, {
-            sort: '-created',
             filter: filter_query || undefined,
+            sort:sortOption,
             fields: "title_en,title_ar,expected_completion_date,launch_price,expand.developer_id,expand.area_id,expand.city_id,payment_plan,down_payment,during_construction_payment,on_handover_payment,is_ready",
             expand: expand_query
         });
@@ -50,7 +53,7 @@ export const getProjects = async (req, res) => {
 
 
 /**
- * 📌 Get all projects (with filtering & pagination)
+ * 📌 Get similar projects (with filtering & pagination)
  */
 export const getSimilarProjects = async (req, res) => {
     try {
@@ -164,6 +167,55 @@ export const deleteProject = async (req, res) => {
         await pb.collection('projects').delete(req.params.id);
         res.json({ success: true, message: "Project deleted successfully" });
     } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * 📌 Get all projects (with filtering & pagination)
+ */
+export const getCityProjectCounts = async (req, res) => {
+    try {
+        const lang = req.headers['accept-language'] || "en"; // ✅ Get language from headers
+        const expand_fields = ['city_id'];
+
+        // ✅ Fetch all projects & expand city details
+        const projectsResponse = await pb.collection('projects').getFullList(
+            {
+            fields: "expand.city_id",
+            expand: expand_fields // ✅ Expand to fetch city details directly
+        });
+
+
+       const projects=projectsResponse.map(project=>new Project(project,lang));
+
+       console.log(projects);
+
+        // ✅ Aggregate counts for each city
+        const cityProjectCounts = projects.reduce((acc, project) => {
+            if (project.location?.city) {
+                const city = project.location.city;
+                if (!acc[city.id]) {
+                    acc[city.id] = {
+                        city_id: city.id,
+                        city_name: city.name,
+                        project_count: 0
+                    };
+                }
+                acc[city.id].project_count += 1;
+            }
+            return acc;
+        }, {});
+
+        // ✅ Convert object to array
+        const cityCountsArray = Object.values(cityProjectCounts);
+        // ✅ Send response
+        res.json({
+            success: true,
+            data: cityCountsArray
+        });
+    } catch (error) {
+
         res.status(400).json({ success: false, error: error.message });
     }
 };

@@ -69,7 +69,7 @@ export function buildSortOption(req,) {
     }
   
     // Valid fields that can be sorted
-    const validFields = ['posted_date', 'price', 'area', 'bed'];
+    const validFields = ['posted_date', 'price', 'area', 'bed','launch_price','delivery_date'];
   
     // Check if requested field is valid
     if (!validFields.includes(sort_by)) {
@@ -91,6 +91,14 @@ export function buildSortOption(req,) {
       case 'price':
         // If your DB field is price
         sortOption = `${prefix}price`;
+        break;
+      case 'delivery_date':
+          // If your DB field is price
+          sortOption = `${prefix}expected_completion_date`;
+          break;
+      case 'launch_price':
+          // If your DB field is price
+        sortOption = `${prefix}launch_price`;
         break;
       case 'area':
         // If your DB field is living_space.area

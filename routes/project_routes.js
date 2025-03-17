@@ -6,7 +6,8 @@ import {
     createProject,
     updateProject,
     deleteProject,
-    getSimilarProjects
+    getSimilarProjects,
+    getCityProjectCounts
 } from '../controllers/project_controller.js';
 
 const router = express.Router();
@@ -15,6 +16,9 @@ const router = express.Router();
 router.get('/projects', getProjects);
 
 router.get('/similar-projects', getSimilarProjects);
+
+router.get('/city-project-counts', getCityProjectCounts);
+
 
 router.get('/projects/:id', getProjectById);
 
