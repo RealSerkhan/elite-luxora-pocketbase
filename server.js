@@ -11,6 +11,8 @@ import agentsRoute from './routes/agents_route.js';
 import commentsRoutes from './routes/comment_routes.js';
 import locationRoutes from './routes/location_routes.js';
 import mortgageFaqs from './routes/mortgage_routes.js';
+import developerRoutes from './routes/developer_routes.js';
+
 
 
 
@@ -79,8 +81,12 @@ app.use('/api/comment', commentsRoutes);
 
 // ✅ location Routes
 app.use('/api/location', locationRoutes);
+
 // ✅ mortgage Routes
 app.use('/api/mortgage', mortgageFaqs);
+
+// ✅ developer Routes
+app.use('/api/developer', developerRoutes);
 
 
 
