@@ -9,6 +9,10 @@ class Developer extends BaseModel {
         this.name = data[`name_${lang}`] || data.name_en;
 
         this.image_link = generateImageUrl(data.collectionId, data.id, data.image_link);
+
+        this.whatsapp=data.whatsapp;
+        this.phone_number=data.phone_number;
+        this.email=data.email;
         
     }
 }
