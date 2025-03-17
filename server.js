@@ -10,6 +10,8 @@ import transactionsRoutes from './routes/transactions_route.js';
 import agentsRoute from './routes/agents_route.js';
 import commentsRoutes from './routes/comment_routes.js';
 import locationRoutes from './routes/location_routes.js';
+import mortgageFaqs from './routes/mortgage_routes.js';
+
 
 
 
@@ -75,8 +77,10 @@ app.use('/api/agents', agentsRoute);
 app.use('/api/comment', commentsRoutes);
 
 
-// ✅ comment Routes
+// ✅ location Routes
 app.use('/api/location', locationRoutes);
+// ✅ mortgage Routes
+app.use('/api/mortgage', mortgageFaqs);
 
 
 
