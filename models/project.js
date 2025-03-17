@@ -1,3 +1,4 @@
+import { generateImageUrls } from '../utils/image_helper.js';
 import Area from './area.js';
 import BaseModel from './base_model.js';
 import City from './city.js';
@@ -22,6 +23,9 @@ class Project extends BaseModel {
         this.expected_completion_date = data.expected_completion_date ? Date(data.expected_completion_date) : null;
         this.booking_started_date = data.booking_started_date ? Date(data.booking_started_date) : null;
         this.is_ready = data.is_ready;
+
+        this.images = generateImageUrls(data.collectionId, data.id, data.images);
+        
 
         // ✅ Master Plan (Image)
         this.master_plan = data.master_plan;
