@@ -31,7 +31,7 @@ export const getProjects = async (req, res) => {
         const result = await pb.collection('projects').getList(page, per_page, {
             filter: filter_query || undefined,
             sort:sortOption,
-            fields: "title_en,title_ar,expected_completion_date,launch_price,expand.developer_id,expand.area_id,expand.city_id,payment_plan,down_payment,during_construction_payment,on_handover_payment,is_ready,images",
+            fields: "title_en,title_ar,expected_completion_date,launch_price,expand.developer_id,expand.area_id,expand.city_id,payment_plan,down_payment,during_construction_payment,on_handover_payment,is_ready,images,collectionId,id",
             expand: expand_query
         });
 
