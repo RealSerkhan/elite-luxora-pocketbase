@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { addProperty, deleteProperty, getProperties, updateProperty, getProperty, getCategories } from '../controllers/property_controller.js';
+import { addProperty, deleteProperty, getProperties, updateProperty, getProperty, getCategories, getPopularSearches } from '../controllers/property_controller.js';
 import upload from '../config/multer.js';
 
 
@@ -31,8 +31,11 @@ router.put('/update-property/:id', updateProperty);
 // 📌 Route to delete property
 router.delete('/delete-property/:id', deleteProperty);
 
-// ✅ Route to get properties
+// ✅ Route to get propert categories
 router.get('/get-categories', getCategories);
+
+// ✅ Route to popular searches
+router.get('/get-popular-searches', getPopularSearches);
 
 
 

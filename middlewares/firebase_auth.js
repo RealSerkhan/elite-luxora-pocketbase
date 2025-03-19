@@ -18,6 +18,15 @@ if (!admin.apps.length) {
     });
 }
 
+
+
+// ✅ Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.applicationDefault()
+    });
+}
+
 /**
  * 📌 Middleware: Verify Firebase Token & Sync with PocketBase
  */
@@ -27,44 +36,47 @@ const verifyFirebaseToken = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({ success: false, message: "Unauthorized: No token provided" });
         }
-        console.log(token);
+        console.log("Firebase Token:", token);
 
         // ✅ Verify Firebase Token
         const decodedToken = await admin.auth().verifyIdToken(token);
         req.user = decodedToken; // Attach user data
+        console.log("Decoded Firebase Token:", decodedToken);
 
         // ✅ Check if user exists in PocketBase
         let pbUser;
         try {
             pbUser = await pb.collection('users').getFirstListItem(`email="${decodedToken.email}"`);
+            console.log("User exists in PocketBase:", pbUser);
         } catch (error) {
-            // ✅ Create new user in PocketBase if not found
+            console.log("User not found in PocketBase, creating new user...");
+
+            // ✅ Create new user in PocketBase without password
             pbUser = await pb.collection('users').create({
                 email: decodedToken.email,
                 name: decodedToken.name || "Firebase User",
-                emailVisibilty: true,
+                email_visibility: true,
                 auth_type: "google",
-                password: Math.random().toString(36).slice(-8),
-                password_confirm: Math.random().toString(36).slice(-8)
             });
         }
 
-        // ✅ Generate a PocketBase Authentication Token (Admin Auth)
-        const adminAuth = await pb.collection('_superusers').authWithPassword(
-            process.env.PB_ADMIN_EMAIL, 
-            process.env.PB_ADMIN_PASSWORD
-        );
+        console.log("PocketBase User Found/Created:", pbUser);
 
-        // ✅ Attempt to refresh user auth with admin token
-        const pbAuthToken = await pb.collection('users').authRefresh({ expand: adminAuth.token });
+        console.log(decodedToken);
 
-        req.pocketbaseToken = pbAuthToken.token;
+        // ✅ Authenticate the user using external auth (NO password required)
+        const authResponse = await pb.collection('users').authWithOAuth2Code("google", token);
+
+        // ✅ Attach PocketBase authentication token to request
+        req.pocketbaseToken = authResponse.token;
         req.pocketbaseUser = pbUser;
 
         next();
     } catch (error) {
+        console.error("Error verifying Firebase token:", error);
         return res.status(401).json({ success: false, message: "Invalid Firebase token", error: error.message });
     }
 };
+
 
 export default verifyFirebaseToken;

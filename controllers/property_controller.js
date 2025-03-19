@@ -4,6 +4,8 @@ import fs from 'fs';
 import { addCondition, buildBooleanMatch, buildExactMatch, buildKeywordSearch, buildMultiSelectFilter, buildMultiSelectJSONFilter, buildMultiSelectNumberFilter, buildNumericRange, buildSortOption } from '../utils/filter.js';
 import { appendBodyToForm, appendFilesToForm } from '../utils/form_data_helper.js';
 import Category from '../models/category.js';
+import PopularSearch from '../models/popular_search.js';
+import BaseResponse from '../models/base_response.js';
 
 
 export const getProperties = async (req, res) => {
@@ -208,6 +210,19 @@ export const getCategories = async (req, res) => {
 
             { data: categories }
         );
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const getPopularSearches = async (req, res) => {
+    try {
+        const popularSearches = await pb.collection('popular_searches').getFullList({
+            limit: 10
+        });
+        const searches=popularSearches.map(search =>new PopularSearch(search));
+
+        res.json(new BaseResponse(true,searches));
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
