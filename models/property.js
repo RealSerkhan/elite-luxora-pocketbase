@@ -46,6 +46,7 @@ class Property extends BaseModel {
         // ✅ Amenities & Deal Types
         this.amenities = data.amenities || [];
         this.deal_types = data.deal_types || [];
+        this.listing_type = data.listing_type;
 
         // ✅ Relations (Expanded Data or Raw IDs)
         this.categories = data.expand?.category_ids?.map(category => new Category(category, lang)) || data.category_ids || [];
