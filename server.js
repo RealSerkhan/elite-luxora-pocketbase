@@ -12,6 +12,7 @@ import commentsRoutes from './routes/comment_routes.js';
 import locationRoutes from './routes/location_routes.js';
 import mortgageFaqs from './routes/mortgage_routes.js';
 import developerRoutes from './routes/developer_routes.js';
+import searchRoutes from './routes/search_routes.js';
 
 
 
@@ -91,6 +92,9 @@ app.use('/api/mortgage', mortgageFaqs);
 
 // ✅ developer Routes
 app.use('/api/developer', developerRoutes);
+
+// ✅ search Routes
+app.use('/api/search', searchRoutes);
 
 
 
