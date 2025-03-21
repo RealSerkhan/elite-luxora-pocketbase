@@ -21,7 +21,22 @@ export const getAgents = async (req, res) => {
         filter_query = addCondition(filter_query, buildExactMatch(req.query.deal_type, 'deal_type'));
         filter_query = addCondition(filter_query, buildExactMatch(req.query.currency, 'currency'));
         filter_query = addCondition(filter_query, buildNumericRange(req.query.min_price, req.query.max_price, 'price'));
+        // 🔹 Filtering by Multiple Languages
+        if (req.query.languages) { 
+            const languages = req.query.languages.split(',');
+            const languageConditions = languages.map(lang => `languages ?~ "${lang}"`).join(' || ');
+            filter_query = addCondition(filter_query, `(${languageConditions})`);
+        }
 
+        // 🔹 Filtering by Nationality
+        if (req.query.nationality) {
+            filter_query = addCondition(filter_query, `nationality = "${req.query.nationality}"`);
+        }
+
+        // 🔹 Filtering by Name (Search)
+        if (req.query.name) {
+            filter_query = addCondition(filter_query, `name ~ "${req.query.name}"`); // Supports partial search
+        }
 
         // ✅ Build the sort option
         const sortOption = buildSortOption(req);
