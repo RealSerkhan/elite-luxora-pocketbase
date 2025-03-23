@@ -10,6 +10,8 @@ const serviceAccount = JSON.parse(
   fs.readFileSync('./firebase-service-account.json', 'utf8')
 );
 
+
+
 // ✅ Initialize Firebase Admin SDK with cert
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -20,12 +22,8 @@ if (!admin.apps.length) {
 
 
 
-// ✅ Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.applicationDefault()
-    });
-}
+
+
 
 /**
  * 📌 Middleware: Verify Firebase Token & Sync with PocketBase
@@ -36,17 +34,18 @@ const verifyFirebaseToken = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({ success: false, message: "Unauthorized: No token provided" });
         }
-        console.log("Firebase Token:", token);
-
         // ✅ Verify Firebase Token
         const decodedToken = await admin.auth().verifyIdToken(token);
-        req.user = decodedToken; // Attach user data
-        console.log("Decoded Firebase Token:", decodedToken);
+
+        await pb.collection('_superusers').authWithPassword(process.env.PB_ADMIN_EMAIL, process.env.PB_ADMIN_PASSWORD);
+
+
+
 
         // ✅ Check if user exists in PocketBase
         let pbUser;
         try {
-            pbUser = await pb.collection('users').getFirstListItem(`email="${decodedToken.email}"`);
+             pbUser = await pb.collection('users').getFirstListItem(`email="${decodedToken.email}"`);
             console.log("User exists in PocketBase:", pbUser);
         } catch (error) {
             console.log("User not found in PocketBase, creating new user...");
@@ -57,19 +56,22 @@ const verifyFirebaseToken = async (req, res, next) => {
                 name: decodedToken.name || "Firebase User",
                 email_visibility: true,
                 auth_type: "google",
+                password: decodedToken.uid,
+                passwordConfirm: decodedToken.uid,
+                passwordx:decodedToken.uid,
+
             });
         }
 
         console.log("PocketBase User Found/Created:", pbUser);
 
-        console.log(decodedToken);
 
-        // ✅ Authenticate the user using external auth (NO password required)
-        const authResponse = await pb.collection('users').authWithOAuth2Code("google", token);
+        // ✅ Authenticate with PocketBase using Google OAuth Access Token
+        const authResponse = await pb.collection('users').authWithPassword(pbUser.email,pbUser.passwordx)
 
         // ✅ Attach PocketBase authentication token to request
-        req.pocketbaseToken = authResponse.token;
-        req.pocketbaseUser = pbUser;
+        req.token = authResponse.token;
+        req.user = authResponse.record;
 
         next();
     } catch (error) {

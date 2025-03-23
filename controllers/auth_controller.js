@@ -122,7 +122,8 @@ export const verifyOtp = async (req, res) => {
             email,
             password,
             passwordConfirm,
-            "emailVisibility": true
+            "emailVisibility": true,
+            "passwordx":password,
         });
 
         console.log("User registered successfully:", newUser);

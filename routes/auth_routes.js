@@ -27,9 +27,8 @@ router.get('/firebase', verifyFirebaseToken, (req, res) => {
     res.json({
         success: true,
         message: "Firebase Sign-In Successful",
-        firebase_user: req.user,
-        pocketbase_token: req.pocketbaseToken,
-        pocketbase_user: req.pocketbaseUser
+        user: req.user,
+        token: req.token
     });
 });
 
