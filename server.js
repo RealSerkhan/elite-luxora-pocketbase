@@ -36,7 +36,7 @@ pb.autoCancellation(false);
 
 // ✅ Enable CORS for Frontend Access
 app.use(cors({
-    origin: ['https://sparkly-cranachan-73dae8.netlify.app'], // ✅ Allows all origins (for testing)// ['https://yourfrontend.com', 'https://another-frontend.com'],
+    origin: ['https://elite-luxora.netlify.app'], // ✅ Allows all origins (for testing)// ['https://yourfrontend.com', 'https://another-frontend.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
