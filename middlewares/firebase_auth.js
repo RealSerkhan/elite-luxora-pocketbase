@@ -19,6 +19,8 @@ if (!admin.apps.length) {
         // optionally specify: projectId, databaseURL, etc. if needed
     });
 }
+pb.collection('_superusers').authWithPassword(process.env.PB_ADMIN_EMAIL, process.env.PB_ADMIN_PASSWORD);
+
 
 
 
@@ -37,7 +39,6 @@ const verifyFirebaseToken = async (req, res, next) => {
         // ✅ Verify Firebase Token
         const decodedToken = await admin.auth().verifyIdToken(token);
 
-        await pb.collection('_superusers').authWithPassword(process.env.PB_ADMIN_EMAIL, process.env.PB_ADMIN_PASSWORD);
 
 
 
