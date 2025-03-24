@@ -36,7 +36,7 @@ pb.autoCancellation(false);
 
 // ✅ Enable CORS for Frontend Access
 app.use(cors({
-    origin: ['http:185.162.11.43:80'], // ✅ Allows all origins (for testing)// ['https://yourfrontend.com', 'https://another-frontend.com'],
+    origin: '*', // ✅ Allows all origins (for testing)// ['https://yourfrontend.com', 'https://another-frontend.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
