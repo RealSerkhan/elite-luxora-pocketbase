@@ -58,6 +58,8 @@ function buildFilterQuery(req, lang) {
     filter = addCondition(filter, buildExactMatch(req.query.project_id, 'project_id'));
     filter = addCondition(filter, buildExactMatch(req.query.agent_id, 'agent_id'));
     filter = addCondition(filter, buildExactMatch(req.query.listing_types, 'listing_type'));
+    filter = addCondition(filter, buildExactMatch(req.query.completion_status, 'project_id.completion_status'));
+
 
 
     // 2. Multi-select: property_type, category_ids
