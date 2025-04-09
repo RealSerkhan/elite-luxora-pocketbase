@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { addProperty, deleteProperty, getProperties, updateProperty, getProperty, getCategories, getPopularSearches } from '../controllers/property_controller.js';
+import { addProperty, deleteProperty, getProperties, updateProperty, getProperty, getCategories, getPopularSearches, getPropertiesCount } from '../controllers/property_controller.js';
 import upload from '../config/multer.js';
 
 
@@ -36,6 +36,9 @@ router.get('/get-categories', getCategories);
 
 // ✅ Route to popular searches
 router.get('/get-popular-searches', getPopularSearches);
+
+// ✅ Route to properties count
+router.get('/get-properties-count', getPropertiesCount);
 
 
 

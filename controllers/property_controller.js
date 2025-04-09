@@ -231,3 +231,40 @@ export const getPopularSearches = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const getPropertiesCount = async (req, res) => {
+    try {
+        const lang = req.headers['accept-language'] || "en";
+
+        // ✅ Build the filter in a separate function
+        const filter_query = buildFilterQuery(req, lang);
+
+        // ✅ Build the sort option
+        const sortOption = buildSortOption(req);
+
+        // ✅ Pagination
+        const page = parseInt(req.query.page) || 1;
+        const per_page = parseInt(req.query.per_page) || 10;
+
+        console.log(`Applied Filter: ${filter_query}, Page: ${page}, PerPage: ${per_page}`);
+
+        // ✅ Fetch filtered properties from PocketBase
+        const result = await pb.collection('properties').getFullList( {
+            sort: sortOption,
+            fields: "id",
+            filter: filter_query || undefined,
+        });
+
+
+
+        // ✅ Transform raw PocketBase data into `Property` objects
+        const properties = result.map(item => new Property(item, lang));
+
+        res.json({
+            total_items: result.length,
+            properties
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
